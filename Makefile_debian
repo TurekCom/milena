@@ -1,0 +1,26 @@
+
+export prefix=/usr
+export milena_dir=$(prefix)/share/milena
+export doc_dir=$(prefix)/share/doc/milena
+export distro=$(shell uname -o)
+export mbrola=/usr/bin/mbrola
+export mbrola_voice=/usr/share/mbrola/pl1/pl1
+export contrast=contrast
+export distro=debian
+export morfologik=true
+
+all:
+	make -C src all
+	make -C utils all
+
+clean:
+	make -C src clean
+	make -C utils clean
+
+install:
+	make -C src install
+	make -C utils install
+
+uninstall:
+	make -C src uninstall
+	make -C utils uninstall

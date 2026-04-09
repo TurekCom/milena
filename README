@@ -1,0 +1,268 @@
+Krótko (z uwagi na brak czasu):
+
+Milena to system TTS, s³u¿±cy do translacji tekstu w jêzyku polskim na
+zapis fonetyczny, który mo¿e sterowaæ bezpo¶rednio syntezatorem mowy.
+W przeciwieñstwie do istniej±cych tego typu systemów Milena korzysta
+z danych zapisanych w plikach tekstowych w formacie czytelnym dla cz³owieka,
+co pozwala na ³atw± modyfikacjê owych plików w celu uzyskania lepszej jako¶ci
+mowy.
+
+Milena jak na razie stanowi do¶æ wczesn± fazê rozwoju, tak wiêc efekty
+nie musz± byæ wcale porównywalne z komercyjnymi systemami (np. Ivona
+czy Loquendo). Tym niemniej stanowi alternatywê dla darmowego eSpeaka,
+a generowana przez modu³ mbroli mowa jest po pierwsze nieco lepsza
+jako¶ciowo ni¿ przy u¿yciu zestawu eSpeak + mbrola, po drugie dziêki
+zastosowaniu tekstowych s³owników nie wymaga w wiêkszo¶ci przypadków
+wstêpnego przetwarzania tekstu.
+
+===========================================================================
+				UWAGA!
+   
+   Milena _NIE_JEST_ kombajnem s³u¿±cym do czytania plików w dowolnym
+   formacie. Jedynym rozumianym formatem jest czysty tekst, zawieraj±cy
+   ka¿dy akapit w pojedynczej linii (jak w przypadku zastosowania opcji
+   -w 0 w Antiwordzie). Tekst mo¿e byæ interpretowany jako tekst literacki,
+   zawieraj±cy dialogi oraz akapity separuj±ce oraz mo¿e zawieraæ dodatkowe
+   informacje przeznaczone dla Mileny. Wymagane jest podanie tekstu
+   w kodowaniu ISO-8859-2. Do konwersji mo¿na u¿yæ do³±czonego programu
+   "milenizer" (patrz README_utils).
+   
+===========================================================================
+
+W odró¿nieniu od innych systemów Milena przetwarza tekst wielofazowo,
+co pozwala na ³atwe modyfikacje zachowania poszczególnych faz czy te¿
+stworzenie w³asnego programu realizuj±cego dan± fazê w inny sposób.
+Poszczególne fazy to:
+
+1) Frazer
+
+   Przyjmuje na wej¶ciu tekst w zapisie naturalnym. Koryguje wymowê
+   obcojêzycznych wyrazów i skrótowców, ustala prawid³ow± formê liczebników
+   oraz jednostek przy liczebnikach mianowanych. Zwraca pojedyncze
+   frazy tekstu w zapisie ortograficznym oraz informacjê o rodzaju danej frazy.
+   Aktualna wersja frazera wymaga tekstu wej¶ciowego w ISO-8859-2.
+   
+   Frazer interpretuje wej¶ciowy tekst jako "literacki" - czyli nie zawieraj±cy
+   ró¿nych dziwnych znaczków które w tekstach takowych rzadko wystêpuj±.
+   W przeciwieñstwie do innych systemów nie ma tu mo¿liwo¶ci w³±czenia
+   odczytywania wszystkich znaków interpunkcyjnych czy sygnalizacji wielkich
+   liter. Powód jest prosty - Milena w za³o¿eniach mia³a byæ systemem
+   s³u¿±cym do czytania literatury piêknej a nie technicznej, i te za³o¿enia
+   zdaje siê spe³niaæ.
+   
+   
+2) Prestresser
+
+   Ustala akcentowanie dla przypadków, gdy wyraz nie jest akcentowany
+   na drugiej sylabie od koñca oraz si³ê akcentu dla ró¿nych wyrazów.
+   Przyjmuje na wej¶ciu frazê w zapisie ortograficznym, zwraca tê sam±
+   frazê wzbogacon± o informacje o akcentowaniu.
+   
+3) Translator
+
+   Przyjmuje na wej¶ciu frazê w zapisie ortograficznym i t³umaczy
+   j± na notacjê EPN.
+   
+4) Poststresser
+
+   Ustala akcentowanie dla s³ów które nie zosta³y uwzglêdnione w fazie
+   frazera lub prestressera. W praktyce sprowadza siê to do ustalenia
+   akcentów na drugiej sylabie od koñca oraz uwzglêdnienia po³±czeñ
+   wyrazów (np. "nie mam" akcentowanie na "nie"). Zwraca tekst w notacji
+   EPN z akcentami umieszczonymi bezpo¶rednio przed samog³osk± tworz±c±
+   sylabê.
+   
+5) Modu³ wyj¶ciowy
+
+   T³umaczy tekst w notacji EPN z akcentami wewn±trz wyrazów na (szeroko
+   rozumian±) mowê. W chwili obecnej istnieje tylko jeden modu³ wyj¶ciowy,
+   którego wynikiem jest tekst w notacji Mbroli.
+
+Zarówno tekst wej¶ciowy dla frazera, jak i tekst ortograficzny
+w poszczególnych fazach mog± zawieraæ dodatkowe informacje o akcentowaniu
+i wymowie. Poniewa¿ zarówno sam program, jak i u¿yta wewnêtrznie notacja
+nie s± w pe³nu opracowane i ukoñczone, bezpiecznymi sekwencjami steruj±cymi
+s± na razie:
+
+~! (akcent g³ówny) - np. "techn~!ika"
+~, (akcent pomocniczy)
+~' (separator) - np "s~'inantropus"
+
+Dodatkowo ka¿de s³owo mo¿e byæ poprzedzone informacjami o sposobie
+akcentowania, zawartymi w nawiasach kwadratowych oraz ogólnymi informacjami
+o s³owie, zawartymi w nawiasach klamrowych.
+
+Rozpoznawane sposoby akcentowania to:
+cyfra - akcent na n-tej sylabie od koñca. Je¶li poprzedzona znakiem '+',
+oznacza akcent pomocniczy na n-tej sylabie od pocz±tku.
+n - wyraz nieakcentowany lub s³abo akcentowany
+k - wyraz wymawiany jest ³±cznie z nastêpnym
+
+Informacje o s³owie to:
+v - s³owo jest czasownikiem (potrzebne przy akcentowaniu poprzedzaj±cego 'nie')
+cyfra - s³owo powinno byæ wymawiane w okre¶lony sposób. Sposoby wymowy
+	okre¶la modu³ wyj¶ciowy, jedynym obowi±zuj±cym ustaleniem jest to,
+	¿e '0' okre¶la normalny sposób wymowy.
+
+Pliki danych s± wyszukiwane:
+
+a) w bie¿±cym katalogu
+b) w katalogu ~/.milena
+c) w katalogu instalacyjnym
+
+Poszczególne pliki zawieraj±:
+
+1) Frazer:
+	
+	pl_phraser.dat - regu³y rozpoznawania i wymowy fraz z liczebnikami
+	pl_udict.dat - s³ownik dla frazera, zawieraj±cy obcojêzyczne
+		zwroty (s³ownik u¿ytkownika)
+	pl_charspell.dat - dodatkowy plik zawieraj±cy wymowê wiêkszo¶ci
+		znaków
+	pl_xx_udict.dat - dodatkowy plik zawieraj±cy dodatkowy s³ownik
+		dla jêzyka xx (np. pl_en_udict.dat)
+	pl_hours.dat - plik odpowiedzialny za czytanie godzin
+
+2) Prestresser:
+
+	pl_stress.dat - regu³y akcentowania
+	pl_dict.dat - s³ownik (wy³±cznie wyrazów polskich)
+
+3) Translator:
+	
+	pl_pho.dat - regu³y translacji tekstu ortograficznego na fonetyczny
+	
+4) Poststresser:
+
+	(brak plików danych)
+	
+5) Modu³ Mbroli:
+
+	pl_mbrola.dat - regu³y translacji tekstu fonetycznego na fonemy
+		u¿ywane przez Mbrolê.
+		
+	pl_intona.dat - dane dla intonatora eSpeak
+
+Formaty plików nie s± na razie opisane - pe³n± dokumentacjê mogê napisaæ
+o ile kto¶ bêdzie zainteresowany. Podajê wiêc w skrócie:
+
+1) s³ownik frazera - patrz plik README_udict
+
+2) formaty frazera - patrz plik README_phraser
+
+3) Ustalanie d³ugo¶ci pauz oraz modyfikacji wymowy w pliku pl_mbrola.dat
+
+Pauzy po frazach ustala siê w linii "pause":
+
+pause [dialog] <typ> <d³ugo¶æ w ms>
+
+Podanie modyfikatora "dialog" oznacza, ¿e d³ugo¶æ pauzy dotyczy
+listy dialogowej, np: "- co to? - zapyta³."
+
+Typy to:
+
+comma - przecinek
+statement - kropka
+exclamation - wykrzyknik
+question - pytanie
+colon - dwukropek
+ellipsis - wielokropek
+
+Pauzy miêdzy akapitami ustalane s± w linii "break":
+
+break <typ> <d³ugo¶æ w ms>
+
+Typy to:
+
+normal - miêdzy zwyk³ymi akapitami
+dialog - miêdzy kwestiami w dialogo
+predial - miêdzy zwyk³ym akapitem a dialogiem (pocz±tek dialogu)
+postdial - miêdzy dialogiem a zwyk³ym akapitem (koniec dialogu)
+long - d³uga pauza, stosowana np. po tytu³ach czy jako separator.
+       Pojawienie siê w tre¶ci pustego akapitu lub akapitu nie zawieraj±cego
+       ani jednego wymawialnego znaku jest przez Milenê interpretowane
+       jako konieczno¶æ zastosowania d³ugiej pauzy
+
+Modyfikacja wymowy polega na zmianie wysoko¶ci i/lub prêdko¶ci wymowy
+fragmentu frazy. Okre¶lany jest w liniach "modify":
+
+modify <nr> <prêdko¶æ> <wysoko¶æ>
+
+gdzie nr to numer modyfikatora (od 1 do 9) a prêdko¶æ i wysoko¶æ to liczby
+z zakresu 0.5 do 2.0. Domy¶lny (zerowy) modyfikator ma obie warto¶ci
+ustawione na 1.0.
+
+UWAGA! Ka¿da fraza rozpoczyna siê od normalnego sposobu wymowy.
+Przy projektowaniu np. konwertera z HTML na tekst uwzglêdniaj±cego ró¿ne
+sposoby wymowy okre¶lonych tagów nale¿y to uwzglêdniæ!
+
+Typowy sposób u¿ycia:
+
+cat chmielewska.txt | \
+	milena -l -u chmielewska.dat | \
+	mbrola -e /gdzie/mieszka/pl1/pl1 - - | \
+	lame -m m -b 32 -x -s 16 - chmielewska.mp3
+	
+gdzie "chmielewska.dat" bêdzie zawieraæ miêdzy innymi:
+
+// wszystko czerwone
+muldgaard(owi|em|zie|a|) mildgord%
+
+Je¶li chcemy bezpo¶rednio ods³uchaæ to co mówi Milena bez tworzenia
+plików po¶rednich, zastêpujemy lame dowolnym programem, który
+potrafi odtworzyæ podany na standardowe wej¶cie d¿wiêk w formacie raw,
+16 bitów little endian, 16 kHz, mono. Przyk³adowo:
+
+cat chmielewska.txt | \
+	milena -l -u chmielewska.dat | \
+	mbrola -e /gdzie/mieszka/pl1/pl1 - - | \
+	aplay -f s16_le -c 1 -r 16000 -t raw -
+
+lub (przy u¿yciu sox):
+
+cat chmielewska.txt | \
+	milena -l -u chmielewska.dat | \
+	mbrola -e /gdzie/mieszka/pl1/pl1 - - | \
+	play -s -c 1 -r 16000 -t raw -2 -
+
+Wszystkie opcje Mileny (z milena -h):
+
+ -h	help
+ -v	verbose, pokazuje etapy posrednie
+	i zastosowane reguly translacji
+ -p	phraser, wylacznie etap frazera
+	do testow regul rozpoznawania i slownika
+ -l	lektor, uwzglednia dialogi i puste akapity
+ -i	frazer ignoruje informacje dodatkowe w {} i []
+ -I	frazer ignoruje akcenty i separatory
+ -P	frazer odczytuje wiêkszosc znakow nieliterowych
+	(implikuje -i -I)
+ -H	frazer odczytuje godziny
+ -L xx	frazer wczytuje plik jezykowy
+ -u	wczytuje dodatkowy plik slownika
+ -f	wczytuje dodatkowy plik frazera
+ -m	wczytuje dodatkowy plik modulu Mbroli
+ 
+Opcje -u, -m, -L oraz -f moga wystepowac wielokrotnie.
+
+
+Uwagi koñcowe:
+
+Mimo ¿e Milenie daleko jeszcze do doskona³o¶ci, dla kogo¶ przyzwyczajonego
+do syntetycznego g³osu s³uchanie np. ksi±¿ki w mp3 jest - szczególnie je¶li
+brak alternatywnego rozwi±zania - ca³kiem zno¶ne, a po paru godzinach mo¿na
+siê przyzwyczaiæ. Z moich prywatnych porad - nale¿y nagraæ sobie któr±¶
+ze swoich ulubionych ksi±¿ek, tak±, której tre¶æ jest znana a jednocze¶nie
+jest to pozycja do której lubi siê wracaæ. W moim przypadku by³ to "Pier¶cieñ"
+Nivena (do³±czony s³ownik frazera zawiera równie¿ s³owa specyficzne
+dla tej pozycji).
+
+Wszelkie uwagi proszê kierowaæ na adres:
+
+Bohdan R. Rau <ethanak@polip.com>
+
+Rozpoczêcie tematu od [milena] powinno znacz±co przyspieszyæ odnalezienie
+takiego maila w przepastnych czelu¶ciach mojego inboxa :)
+
+Bohdan R. Rau
+

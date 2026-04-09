@@ -1,0 +1,251 @@
+#!/bin/bash
+
+tempo=0.8
+pitch=0.9
+soxeffect_say="contrast"
+soxeffect_book="vol 1.2 contrast"
+bookmode=mono
+%PLDNOS%lame_noswap=yes
+morfologik=never
+awblevel=2
+
+rcfile=""
+if [ "$1" = "-c" ] ; then
+    shift
+    rcfile="$1"
+    if ! echo $rcfile | fgrep "/" >/dev/null; then
+	if ! echo $rcfile | grep '^\.'; then
+	    rcfile=${HOME}"/."$rcfile
+	else
+	    rcfile=${HOME}"/"$rcfile
+	fi
+    fi
+    shift
+fi
+
+if [ "$rcfile" == "" ] ; then
+    f=%ETCDIR%/milena.conf
+    if [ -f "$f" ] ; then
+	. "$f"
+    fi
+    f=${HOME}/.local/share/milena.conf
+    if [ -f "$f" ] ; then
+	. "$f"
+    else
+	f=${HOME}/.milena_bookrc
+	if [ -f "$f" ] ; then
+	    . "$f"
+	fi
+    fi
+else
+    if [ ! -f "$rcfile" ] ; then
+	echo "Brak pliku ${rcfile}"
+	exit 1
+    fi
+    . "${rcfile}"
+fi
+if [ "$voice" = "" ] ; then
+    echo "Brak okreslenia lokalizacji pliku pl1"
+    exit 1
+fi
+if [ "$mbrola" = "" ] ; then
+    if ! mbrola=`which mbrola 2>/dev/null` ; then
+	echo "Brak okreslenia lokalizacji mbroli"
+	exit 1
+    fi
+fi
+
+bindir=%PREFIX%/bin
+
+function prt()
+{
+echo "Sposob u¿ycia: $0 [opcje] <katalog> <katalog_wynikowy>"
+echo -e "\nOpcje:"
+echo "-h          wy¶wietl pomoc"
+echo "-b <tryb>   kompresja awb (0 do 9, domy¶lnie 2)"
+echo "-p <plik>   obrazek ok³adki (jpg)"
+echo "-1          tworzy pojedynczy plik awb"
+echo "-Z          przeka¿ parameter -M do Mileny"
+echo "Opcje u,L,H,m,Q,s,t,z oraz f przekazane bêd± do Mileny"
+echo -e "\nW katalogu musi znajdowaæ siê plik index.nok utworzony przez"
+echo "milenizera z opcja -x"
+}
+
+function helpme()
+{
+	encodig=`locale charmap`
+	if [ "$encoding" == "ISO-8859-2" ] ; then
+		prt
+	else
+		prt | iconv -f ISO-8859-2 -t $encoding//TRANSLIT
+	fi
+	exit 1
+}
+
+vbs=""
+
+if [ "${mbrola_conf}" != "" ] && [ -f "${mbrola_conf}" ] ; then
+	vbs=" -m ${mbrola_conf}"
+fi
+
+autoadjust=""
+picture=""
+
+while getopts "Qu:L:Hm:f:s:b:ht:p:zZ" opt; do
+	if [ "$opt" == "h" ] ; then
+		helpme
+	fi
+	if [ "$opt" == "p" ] ; then
+		picture="$OPTARG"
+		if [ ! -f "$picture" ] ; then
+			echo A gdzie "$picture"?
+			exit 1
+		fi
+		continue
+	fi
+	if [ "$opt" == "b" ] ; then
+		awblevel="$OPTARG"
+		continue
+	fi
+	if [ "$opt" == "1" ] ; then
+		singlefile="yes"
+		continue
+	fi
+	if [ "$opt" == "L" ] ; then
+		vbs=$vbs" -L "$OPTARG
+		continue
+	fi
+	if [ "$opt" == "s" ] ; then
+		vbs=$vbs" -s "$OPTARG
+		continue
+	fi
+	if [ "$opt" == "H" ] ; then
+		vbs=$vbs" -H"
+		continue
+	fi
+	if [ "$opt" == "Q" ] ; then
+		vbs=$vbs" -Q"
+		continue
+	fi
+	if [ "$opt" == "Z" ] ; then
+		vbs=$vbs" -M"
+		continue
+	fi
+	if [ "$opt" == "z" ] ; then
+		vbs=$vbs" -z"
+		continue
+	fi
+	if [ "$opt" = "t" ] ; then
+		vbs=$vbs" -$opt "$OPTARG
+		continue
+	fi
+	if [ "$opt" != "u" ] && [ "$opt" != "m" ] && [ "$opt" != "f" ] ; then
+		helpme
+		exit 1
+	fi
+	if [ ! -f $OPTARG ] ; then
+		echo Plik slownika $OPTARG nie istnieje
+		exit 1
+	fi
+	vbs=$vbs" -$opt "$OPTARG
+done
+
+if [ "$morfologik"  = "server" ] ; then
+	vbs=$vbs" -b"
+elif [ "$morfologik"  = "always" ] ; then
+	vbs=$vbs" -S"
+else
+	vbs=$vbs" -X"
+fi
+
+shift $((OPTIND-1))
+
+if [ -z "$1" ]  || [ -z "$2" ]; then
+	helpme
+fi
+
+chapter_len=0
+
+indir=$1
+outdir=$2
+
+if [ ! -f "$indir"/index.nok ] ; then
+	echo "Brak pliku index.nok, uzyj milenizera z parametrem -x"
+	exit 1
+fi
+function make_wave()
+{
+	($bindir/milena -l $vbs < "$1";echo "_ 800") | \
+	$mbrola -e -f $pitch -t $tempo $voice - - | \
+	sox -e signed-integer -c 1 -r 16000 -t raw -b 16 - -e signed-integer -c 1 -r 16000 -t raw -b 16 "$outdir"/tempo.raw vol 1.2 contrast
+}
+
+function makepic()
+{
+	if which convert 2>/dev/null >/dev/null ; then
+		convert "$picture" -geometry 240x320 \
+			-gravity center \
+			-background '#4444aa' \
+			-extent 240x320 \
+			"$outdir"/"$outdir".jpg > /dev/null || \
+		cp "$picture" "$outdir/$outdir".jpg
+	else
+		cp "$picture" "$outdir/$outdir".jpg
+	fi
+}
+
+
+a=$IFS
+IFS='
+'
+
+mkdir -p "$outdir"
+ttl=`head -n 1 "$1"/index.nok`
+echo -n > "$outdir"/index.tmp
+
+#multifiles
+
+(
+	echo "#BOOK"
+	echo "$ttl"';'
+	if [ "$picture" != "" ] ; then
+		makepic
+		#cp "$picture" "$outdir/$outdir".jpg
+		echo "#PIC"
+		echo "$outdir".jpg";"
+	fi
+	echo "#TRACKS"
+) > "$outdir"/header.tmp #| iconv -f ISO-8859-2 -t UTF-16 > "$outdir/$outdir".inx
+
+nr=0
+for i in `tail -n +2 "$1"/index.nok`; do
+	let "nr=$nr+1"
+	IFS=$a
+	plik=`echo $i | cut -d: -f1`
+	nazwa=`echo $i | cut -d: -f2`
+	echo -n Plik $plik " ">&2
+	make_wave "$indir/$plik"
+	siz=`stat --format="%s" "$outdir"/tempo.raw`
+	saz=`echo $siz | awk '{print $1/32000.0}'`
+	echo $saz | awk '{t=int($1);s=t%60;m=(t-s)/60;if (s<10) s="0"s;print "Czas "m":"s}' >&2
+	echo "$outdir"_${nr}.awb:0s:$nr:${nazwa}";" >> "$outdir"/index.tmp
+	echo "$outdir"_${nr}.awb:${saz}";" >> "$outdir/header".tmp
+	#sox -s -c 1 -r 16000 -t raw -2 "$outdir"/tempo.raw -t amr-wb -C $awblevel "$outdir"/"$outdir"_${nr}.awb vol 1.2 $contrast
+	amrwb-encoder -dtx $awblevel "$outdir"/tempo.raw "$outdir"/"$outdir"_${nr}.awb
+	rm "$outdir"/tempo.raw
+
+	IFS='
+'
+done
+(
+	cat "$outdir"/header.tmp
+	echo "#CHAPTERS"
+	cat "$outdir"/index.tmp
+	echo "#VERSION"
+	echo "0.7;"
+) | iconv -f ISO-8859-2 -t UTF-16 > "$outdir/$outdir".inx
+rm "$outdir"/index.tmp
+rm "$outdir"/header.tmp
+
+exit 0
+

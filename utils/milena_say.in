@@ -1,0 +1,227 @@
+#!/bin/bash
+
+tempo=0.8
+pitch=0.9
+soxeffect_say="contrast"
+soxeffect_book="vol 1.2 contrast"
+bookmode=mono
+%PLDNOS%lame_noswap=yes
+morfologik=never
+
+rcfile=""
+if [ "$1" = "-c" ] ; then
+    shift
+    rcfile="$1"
+    if ! echo $rcfile | fgrep "/" >/dev/null; then
+	if ! echo $rcfile | grep '^\.'; then
+	    rcfile=${HOME}"/."$rcfile
+	else
+	    rcfile=${HOME}"/"$rcfile
+	fi
+    fi
+    shift
+fi
+
+if [ "$rcfile" == "" ] ; then
+    f=%ETCDIR%/milena.conf
+    if [ -f "$f" ] ; then
+	. "$f"
+    fi
+    f=${HOME}/.local/share/milena.conf
+    if [ -f "$f" ] ; then
+	. "$f"
+    else
+	f=${HOME}/.milena_bookrc
+	if [ -f "$f" ] ; then
+	    . "$f"
+	fi
+    fi
+else
+    if [ ! -f "$rcfile" ] ; then
+	echo "Brak pliku ${rcfile}"
+	exit 1
+    fi
+    . "${rcfile}"
+fi
+if [ "$voice" = "" ] ; then
+    echo "Brak okreslenia lokalizacji pliku pl1"
+    exit 1
+fi
+if [ "$mbrola" = "" ] ; then
+    if ! mbrola=`which mbrola 2>/dev/null` ; then
+	echo "Brak okreslenia lokalizacji mbroli"
+	exit 1
+    fi
+fi
+
+bindir=%PREFIX%/bin
+
+
+function prt()
+{
+echo "Sposob uzycia: $0 [-c <plik_konfig>][opcje] [-F <plik> | tekst]"
+echo -e "\nOpcje:"
+echo "-h           wy¶wietl pomoc"
+echo "-S <efekt>   przekazanie efektu dla programu sox"
+echo "-M m|s       Wymuszenie mono lub stereo"
+echo "-Z           przeka¿ parametr -M do Mileny"
+echo "-B           pobierz efekt i tryb z konfiguracji milena_book"
+echo "-E <charset> kodowanie pliku wej¶ciowego (je¶li nie ISO-8859-2)"
+echo "-O <plik>    Zapisz mowê do pliku"
+echo "-v <vol>     g³o¶no¶æ (z zakresu 0.0 do 1.0)"
+echo "Opcje e,u,l,L,P,H,m,Q,s,t,z oraz f przekazane bêd± do Mileny"
+echo "Opcja -B nie mo¿e byæ stosowana razem z -S lub -M"
+echo -e "\nW przypadku podania pliku wej¶ciowego lub czytania ze standardowego"
+echo "wej¶cia nale¿y stosowaæ kodowanie ISO-8859-2 lub u¿yæ opcji -E."
+echo "W przypadku podania tekstu w linii poleceñ kodowanie pobrane bêdzie"
+echo "z aktualnych ustawieñ locale (polecenie locale charmap)."
+echo "Je¶li ¶cie¿ka do plik konfiguracyjnego nie zawiera ani jednego"
+echo "znaku '/', uzupe³niana jest do katalogu domowego, a wiod±ca kropka"
+echo "zostanie dodana w przypadku jej braku."
+}
+
+function helpme()
+{
+	encodig=`locale charmap`
+	if [ "$encoding" == "ISO-8859-2" ] ; then
+		prt
+	else
+		prt | iconv -f ISO-8859-2 -t $encoding//TRANSLIT
+	fi
+	exit 1
+}
+
+soxeffect="${soxeffect_say}"
+outfile=""
+vbs=""
+if [ "${mbrola_conf}" != "" ] && [ -f "${mbrola_conf}" ] ; then
+	vbs=" -m ${mbrola_conf}"
+fi
+infile=""
+soxchannels=""
+incoding="ISO-8859-2"
+vol=""
+while getopts "Qu:L:Hm:f:F:lPBS:M:hE:s:t:eiIv:zZO:" opt; do
+	if [ "$opt" == "F" ] ; then
+		infile=$OPTARG
+		continue
+	fi
+	if [ "$opt" == "h" ] ; then
+		helpme
+	fi
+	if [ "$opt" == "v" ] ; then
+		vol="$OPTARG"
+		continue
+	fi
+	if [ "$opt" == "E" ] ; then
+		incoding="$OPTARG"
+		continue
+	fi
+	if [ "$opt" == "O" ] ; then
+		outfile="$OPTARG"
+		continue
+	fi
+	if [ "$opt" == "S" ] ; then
+		soxeffect="$OPTARG"
+		continue
+	fi
+	if [ "$opt" == "M" ] ; then
+		if [ "$OPTARG" == "m" ] ; then
+			soxchannels=""
+		elif [ "$OPTARG" == "s" ] ; then
+			soxchannels="-c 2"
+		else
+			helpme
+		fi
+		continue
+	fi
+	if [ "$opt" == "Z" ] ; then
+		vbs=$vbs" -M"
+		continue
+	fi
+	if echo "QzeiIHPl" | fgrep "$opt" >/dev/null 2>/dev/null ; then
+	    vbs=$vbs" -${opt}"
+	    continue
+	fi
+	if [ "$opt" == "B" ] ; then
+		soxeffect="$soxeffect_book"
+		if [ "$bookmode" == "stereo" ] ; then
+			soxchannels="-c 2"
+		fi
+		continue
+	fi
+	if echo "Lst" | fgrep "$opt" >/dev/null 2>/dev/null ; then
+	    vbs=$vbs" -${opt} "$OPTARG
+	    continue
+	fi
+	if [ "$opt" != "u" ] && [ "$opt" != "m" ] && [ "$opt" != "f" ] ; then
+		helpme
+		exit 1
+	fi
+	if [ ! -f $OPTARG ] ; then
+		echo Plik slownika $OPTARG nie istnieje
+		exit 1
+	fi
+	vbs=$vbs" -$opt "$OPTARG
+done
+if [ "$morfologik"  = "server" ] ; then
+	vbs=$vbs" -b"
+elif [ "$morfologik"  = "always" ] ; then
+	vbs=$vbs" -S"
+else
+	vbs=$vbs" -X"
+fi
+if [ "$vol" != "" ] ; then
+	soxeffect="$soxeffect vol $vol"
+fi
+
+if [ -z "$outfile" ] ; then
+	if `which play 2>/dev/null >/dev/null`; then
+		play="play -e signed-integer -c 1 -r 16000 -t raw -b 16 - $soxchannels -q $soxeffect"
+	elif `which aplay 2>/dev/null >/dev/null`; then
+		play="aplay -f s16_le -c 1 -r 16000 -t raw -"
+	else
+		echo "Nie znalazlem polecenia play ani aplay"
+		exit 1
+	fi
+fi
+
+
+shift $((OPTIND-1))
+instr="$@"
+if [ -n "$infile" ] && [ -n "$instr" ] ; then
+	helpme
+	exit 1
+fi
+
+
+(
+if [ "$instr" != "" ] ; then
+	loc=`locale charmap`
+	if [ "$loc" != "ISO-8859-2" ] ; then
+		instr=`echo "$instr" | $bindir/milena_convert $loc`
+	fi
+	echo "$instr"
+elif [ -n "$infile" ] ; then
+	if [ "$incoding" != "ISO-8859-2" ] ; then
+		$bindir/milena_convert $incoding < "$infile"
+	else
+		cat "$infile"
+	fi
+else
+	if [ "$incoding" != "ISO-8859-2" ] ; then
+		$bindir/milena_convert $incoding
+	else
+		cat
+	fi
+fi
+) | \
+	$bindir/milena $vbs | \
+	$mbrola -e -f $pitch -t $tempo $voice - - | \
+(
+if [ -z "$outfile" ] ; then
+	$play
+else
+	sox -e signed-integer -c 1 -r 16000 -t raw -b 16 - $soxchannels "$outfile" $soxeffect
+fi
+)

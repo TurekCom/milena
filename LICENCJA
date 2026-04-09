@@ -1,0 +1,15 @@
+UWAGA!
+
+Poniewa¿ fragment kodu intonatora zosta³ zapo¿yczony z programu eSpeak (wydanego
+na licencji GPL 3) Milena jako ca³o¶æ jest wydana na tej¿e licencji.
+
+Pozosta³e (zarówno kod, jak i dane) s± licencjonowane LGPL 2.
+
+W momencie utworzenia nowego kodu intonatora (co wydaje mi siê konieczne,
+gdy¿ kod eSpeaka nie bardzo nadaje siê dla jêzyka polskiego) bêdzie on
+wydany na licencji LGPL 2.
+
+W przypadku fragmentów programu nie zawieraj±cego intonatora (np. translator
+do notacji EPN) mog± byc one rozpowszechniane na licencji LGPL 2.
+
+Bohdan R. Rau

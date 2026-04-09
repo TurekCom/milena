@@ -1,0 +1,56 @@
+# Git
+.git/
+
+# Windows / editor
+Thumbs.db
+Desktop.ini
+*.log
+
+# Generated local build outputs
+/dist/
+/build_addon_milena/
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/local.properties
+/sapi5_milena/dist/
+/sapi5_milena/build-x64/
+/sapi5_milena/build-x86/
+/tools/android-ndk-r17c/
+/tools/android-toolchain-arm64/
+/tools/android-toolchain-x86_64/
+/tools/android-ndk-r17c-windows-x86_64.zip
+/tmp_*/
+/tmp_sapi_rate/
+/tmp_sapi_vbs/
+/tmp_include_arm64.txt
+__pycache__/
+*.pyc
+
+# Generated binaries and tests
+/milena.exe
+/milena_window.xml
+/nested_test.c
+/milena_test.pho
+/milena_test.raw
+/milena_test.txt
+/milena_test.wav
+/milena_test_clean.wav
+/milena_test_filemode.wav
+/milena_sapi_test_x64.wav
+/milena_sapi_test_x64_bundled.wav
+/milena_sapi_test_x86.wav
+/milena_sapi_test_x86_bundled.wav
+
+# Configure/generated source artifacts
+/found_voice
+/have_contrast
+/src/milena.h
+/src/def_morfologik.h
+/src/milena_cyrillic.h
+/data/pl_phraser.dat
+
+# Android generated runtime pieces
+/android/app/src/main/assets/runtime/common/milena_root/data/
+/android/app/src/main/jniLibs/arm64-v8a/libmilena_exec.so
+/android/app/src/main/jniLibs/x86_64/libmilena_exec.so

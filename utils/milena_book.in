@@ -1,0 +1,338 @@
+#!/bin/bash
+
+tempo=0.8
+pitch=0.9
+soxeffect_say="contrast"
+soxeffect_book="vol 1.2 contrast"
+bookmode=mono
+%PLDNOS%lame_noswap=yes
+morfologik=never
+
+rcfile=""
+if [ "$1" = "-c" ] ; then
+    shift
+    rcfile="$1"
+    if ! echo $rcfile | fgrep "/" >/dev/null; then
+	if ! echo $rcfile | grep '^\.'; then
+	    rcfile=${HOME}"/."$rcfile
+	else
+	    rcfile=${HOME}"/"$rcfile
+	fi
+    fi
+    shift
+fi
+
+if [ "$rcfile" == "" ] ; then
+    f=%ETCDIR%/milena.conf
+    if [ -f "$f" ] ; then
+	. "$f"
+    fi
+    f=${HOME}/.local/share/milena.conf
+    if [ -f "$f" ] ; then
+	. "$f"
+    else
+	f=${HOME}/.milena_bookrc
+	if [ -f "$f" ] ; then
+	    . "$f"
+	fi
+    fi
+else
+    if [ ! -f "$rcfile" ] ; then
+	echo "Brak pliku ${rcfile}"
+	exit 1
+    fi
+    . "${rcfile}"
+fi
+if [ "$voice" = "" ] ; then
+    echo "Brak okreslenia lokalizacji pliku pl1"
+    exit 1
+fi
+if [ "$mbrola" = "" ] ; then
+    if ! mbrola=`which mbrola 2>/dev/null` ; then
+	echo "Brak okreslenia lokalizacji mbroli"
+	exit 1
+    fi
+fi
+
+bindir=%PREFIX%/bin
+
+
+makewav=""
+makeaac=""
+makeogg=""
+makeacp=""
+
+function prt()
+{
+echo "Sposob u¿ycia: $0 [-c <plik_konfig>] [opcje] <plik>|<katalog>"
+echo -e "\nOpcje:"
+echo "-h          wy¶wietl pomoc"
+echo "-A          automatyczne dopasowanie g³o¶no¶ci (tylko mp3!)"
+echo "-S <efekt>  przekazanie efektu dla programu sox"
+echo "-b <rate>   wymuszenie bitrate=<rate> dla programu lame"
+echo "-M m|s      wymuszenie mono lub stereo"
+echo "-a          twórz pliki .aac zamiast .mp3"
+echo "-o          twórz pliki .ogg zamiast .mp3"
+echo "-q          jako¶æ pliku ogg (od -1 do 10, domyslnie 1)"
+echo "-w          tworzenie plików .wav zamiast .mp3 (nie u¿ywa soxa!)"
+echo "-Z          przeka¿ parametr -M do Mileny"
+echo "Opcje u,L,H,m,Q,s,t,z oraz f przekazane bêd± do Mileny"
+echo -e "\nWynikowy plik bêdzie mia³ tê nazwê tak± sam± jak plik wej¶ciowy"
+echo "z rozszerzeniem zmienionym z .txt na .mp3 lub z dodanym"
+echo "rozszerzeniem .mp3 w przypadku innego rozszerzenia pliku wej¶ciowego".
+echo -e "\nW przypadku podania katalogu, skonwertowane zostan± wszystkie pliki"
+echo "z rozszerzeniem .txt w podanym katalogu."
+echo "Je¶li ¶cie¿ka do plik konfiguracyjnego nie zawiera ani jednego"
+echo "znaku '/', uzupe³niana jest do katalogu domowego, a wiod±ca kropka"
+echo "zostanie dodana w przypadku jej braku."
+}
+
+function helpme()
+{
+	encodig=`locale charmap`
+	if [ "$encoding" == "ISO-8859-2" ] ; then
+		prt
+	else
+		prt | iconv -f ISO-8859-2 -t $encoding//TRANSLIT
+	fi
+	exit 1
+}
+
+vbs=""
+if [ "${mbrola_conf}" != "" ] && [ -f "${mbrola_conf}" ] ; then
+	vbs=" -m ${mbrola_conf}"
+fi
+
+autoadjust=""
+
+while getopts "QAu:L:Hm:f:s:S:b:ht:wM:zaoq:Z" opt; do
+	if [ "$opt" == "h" ] ; then
+		helpme
+	fi
+	if [ "$opt" == "w" ] ; then
+		makewav="true"
+		continue
+	fi
+	if [ "$opt" == "o" ] ; then
+		makeogg="true"
+		continue
+	fi
+	if [ "$opt" == "q" ] ; then
+		oggquality="$OPTARG"
+		continue
+	fi
+	if [ "$opt" == "a" ] ; then
+#		if `which aacplusenc >/dev/null 2>/dev/null` ; then
+#			makeacp="true"
+#		else
+			makeaac="true"
+#		fi
+		continue
+	fi
+	if [ "$opt" == "M" ] ; then
+		if [ "$OPTARG" == "m" ] ; then
+			bookmode="mono"
+		elif [ "$OPTARG" == "s" ] ; then
+			bookmode="stereo"
+		else
+			helpme
+		fi
+		continue
+	fi
+	if [ "$opt" == "S" ] ; then
+		soxeffect_book="$OPTARG"
+		continue
+	fi
+	if [ "$opt" == "b" ] ; then
+		bitrate="$OPTARG"
+		continue
+	fi
+	if [ "$opt" == "A" ] ; then
+		autoadjust="t"
+		continue
+	fi
+	if [ "$opt" == "L" ] ; then
+		vbs=$vbs" -L "$OPTARG
+		continue
+	fi
+	if [ "$opt" == "s" ] ; then
+		vbs=$vbs" -s "$OPTARG
+		continue
+	fi
+	if [ "$opt" == "H" ] ; then
+		vbs=$vbs" -H"
+		continue
+	fi
+	if [ "$opt" == "Z" ] ; then
+		vbs=$vbs" -M"
+		continue
+	fi
+	if [ "$opt" == "Q" ] ; then
+		vbs=$vbs" -Q"
+		continue
+	fi
+	if [ "$opt" == "z" ] ; then
+		vbs=$vbs" -z"
+		continue
+	fi
+	if [ "$opt" = "t" ] ; then
+		vbs=$vbs" -$opt "$OPTARG
+		continue
+	fi
+	if [ "$opt" != "u" ] && [ "$opt" != "m" ] && [ "$opt" != "f" ] ; then
+		helpme
+		exit 1
+	fi
+	if [ ! -f $OPTARG ] ; then
+		echo Plik slownika $OPTARG nie istnieje
+		exit 1
+	fi
+	vbs=$vbs" -$opt "$OPTARG
+done
+if [ "$morfologik"  = "server" ] ; then
+	vbs=$vbs" -b"
+elif [ "$morfologik"  = "always" ] ; then
+	vbs=$vbs" -S"
+else
+	vbs=$vbs" -X"
+fi
+
+if [ "$OPTIND" != "$#" ] ; then
+	helpme
+fi
+shift $((OPTIND-1))
+
+if [ -z "$1" ] ; then
+	helpme
+fi
+
+
+sox_channels=1
+lame_mode=m
+endian="-x"
+if [ "$lame_noswap" == "yes" ] ; then
+	endian=""
+fi
+if [ -n "$soxeffect_book" ] && [ "$bookmode" = "stereo" ] ; then
+	sox_channels=2
+	lame_mode=f
+fi
+if [ -n "$makeaac" ] || [ -n "$makeacp" ] ; then
+	if [ "$soxeffect_book" = "" ] ; then
+		soxeffect_book="vol 1.15"
+	fi
+fi
+
+function make_adjust_mp3()
+{
+	echo Ustalanie poziomu dla "$1" >&2
+	mp3=`dirname "$1"`/`basename "$1" .txt`.mp3
+	vol=`$bindir/milena -l $vbs < "$1" | \
+	$mbrola -e -f $pitch -t $tempo $voice - - | \
+	sox -e signed-integer -c 1 -r 16000 -t raw -b 16 - \
+	-s -r 16000 -2 -c $sox_channels -n $soxeffect_book stat 2>&1 | \
+	awk '/Volume/ {print $3*0.95}'`
+	echo Poziom ustalony na $vol dla "$1", rozpoczynam kodowanie >&2
+	$bindir/milena -l $vbs < "$1" | \
+	$mbrola -e -f $pitch -t $tempo $voice - - | \
+	sox -e signed-integer -c 1 -r 16000 -t raw -b 16 - \
+	-s -r 16000 -2 -t raw -c $sox_channels - vol $vol $soxeffect_book  | \
+	lame -r $endian -m $lame_mode -b$bitrate -s 16 - "$mp3"
+}
+
+function make_aac()
+{
+	mp3=`dirname "$1"`/`basename "$1" .txt`.aac
+	$bindir/milena -l $vbs < "$1" | \
+		$mbrola -e -f $pitch -t $tempo $voice - - | \
+		sox -t raw -e signed-integer -c 1 -r 16000 -b 16 - -t wav -c $sox_channels - $soxeffect_book | \
+		faac -o "$mp3" - 2>/dev/null
+
+}
+
+function make_acp()
+{
+	echo ACP $soxeffect_book
+	mp3=`dirname "$1"`/`basename "$1" .txt`.aac
+	$bindir/milena -l $vbs < "$1" | \
+		$mbrola -e -f $pitch -t $tempo $voice - - | \
+		sox -t raw -e signed-integer -c 1 -r 16000 -b 16 - -t wav -c $sox_channels - $soxeffect_book | \
+		aacplusenc - "$mp3" 14
+
+}
+
+function make_ogg()
+{
+	mp3=`dirname "$1"`/`basename "$1" .txt`.ogg
+	$bindir/milena -l $vbs < "$1" | \
+		(
+		if [ -n "$soxeffect_book" ] ; then
+			$mbrola -e -f $pitch -t $tempo $voice - - | \
+			sox -t raw -e signed-integer -c 1 -r 16000 -b 16 - -t wav -c $sox_channels - $soxeffect_book | \
+			oggenc -q "$oggquality" -o "$mp3" - 2>/dev/null
+		else
+			$mbrola -e -f $pitch -t $tempo $voice - -.wav |	oggenc -q "$oggquality" -o "$mp3" - 2>/dev/null
+		fi
+		)
+
+}
+
+function make_mp3()
+{
+	if [ "$makewav" = "true" ] ; then
+		make_wav "$1"
+		return
+	fi
+	if [ "$makeaac" = "true" ] ; then
+		make_aac "$1"
+		return
+	fi
+	if [ "$makeacp" = "true" ] ; then
+		make_acp "$1"
+		return
+	fi
+	if [ "$makeogg" = "true" ] ; then
+		make_ogg "$1"
+		return
+	fi
+	if [ -n "$autoadjust" ] ; then
+		make_adjust_mp3 "$1"
+		return 0
+	fi
+	mp3=`dirname "$1"`/`basename "$1" .txt`.mp3
+	$bindir/milena -l $vbs < "$1" | \
+	$mbrola -e -f $pitch -t $tempo $voice - - | (
+		if [ -n "$soxeffect_book" ] ; then
+			sox -e signed-integer -c 1 -r 16000 -t raw -b 16 - -e signed-integer  -r 16000 -b 16 -t raw -c $sox_channels - $soxeffect_book | \
+			lame -r $endian -m $lame_mode -b$bitrate -s 16 - "$mp3"
+		else
+			lame -r $endian -m $lame_mode -b$bitrate -s 16 - "$mp3"
+		fi
+		)
+}
+
+function make_wav()
+{
+	wav=`dirname "$1"`/`basename "$1" .txt`.wav
+	echo creating $wav
+	$bindir/milena -l $vbs < "$1" | \
+	$mbrola -e -f $pitch -t $tempo $voice - $wav
+}
+
+
+if [ -f "$1" ] ; then
+	make_mp3 "$1"
+elif [ -d "$1" ] ; then
+a=$IFS
+IFS='
+'
+	for i in "$1"/*.txt; do
+	IFS=$a
+		make_mp3 "$i"
+	IFS='
+'
+	done
+else
+	echo "Co to jest \"$1\""?
+fi
+exit 0

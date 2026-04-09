@@ -1,0 +1,18 @@
+mbrola=%MBROLA%
+voice=%VOICE%
+tempo=0.8
+tempo_sub=0.8
+pitch=0.9
+bitrate=32
+oggquality=1
+soxeffect_say="contrast"
+
+#mbrola_conf=%DATADIR%/pl_pro_mbrola.dat
+
+#soxeffect_book="vol 0.7 pad 0 0.2 reverb 45 50 40 vol 2.5 amplitude 0.05 contrast"
+#bookmode=stereo
+soxeffect_book="vol 1.2 contrast"
+bookmode=mono
+
+%PLDNOS%lame_noswap=yes
+morfologik=never

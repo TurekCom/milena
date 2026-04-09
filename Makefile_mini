@@ -1,0 +1,21 @@
+
+export prefix=/usr/local
+export morfologik=false
+
+all:
+	make -C src morfologik=false all
+	make -C data all
+
+clean:
+	make -C src clean
+	make -C data clean
+		
+install:
+	make -C src install
+	ldconfig
+	make -C data install
+
+uninstall:
+	make -C src uninstall
+	ldconfig
+	make -C data uninstall

@@ -1,0 +1,118 @@
+FORMAT PLIKU S£OWNIKA U¯YTKOWNIKA
+
+W czasie wczytywania pliku (lub plików) zawsze najwa¿niejsza jest ostatnia
+pasuj±ca linia (tzn. wzorce dopasowania pobierane s± od ostatniego). Pozwala
+to na ³atwe nadpisywanie ju¿ wczytanych wzorców poprzez wpisanie pasuj±cego
+do istniej±cej ju¿ konstrukcji wzorca w nastêpnym pliku.
+
+Linie s³ownika maj± postaæ:
+
+wzorzec wymowa
+
+gdzie wymowa mo¿e zawieraæ:
+	tekst na który ma byæ przet³umaczony wzorzec
+	flagi
+
+Flagi rozpoczynaj± siê znakiem $ i powinny byæ stosowane wy³acznie
+w przypadku, gdy przet³umaczony tekst jest pojedynczym s³owem
+W przeciwnym przypadku nale¿y stosowaæ sekwencje informacyjne
+w t³umaczeniu.
+
+Komentarze rozpoczynaj± siê ci±giem znaków // i koñcz± siê wraz z koñcem
+linii.
+
+POSTAÆ WZORCA
+
+Wzorzec stanowi ci±g znaków nie zawieraj±cy spacji, który bêdzie dopasowany
+do wej¶ciowego tekstu. Dopasowywany jest na pocz±tku s³owa, dopasowany
+tekst musi koñczyæ siê na granicy s³owa.
+
+We wzorcu mog± wystêpowaæ nastêpuj±ce znaki:
+
+a) ma³a litera - dopasowanie do ma³ej lub du¿ej litery
+b) du¿a litera - dopasowanie do du¿ej litery
+c) cyfra lub znak przestankowy - dopasowanie do konkretnego znaku
+d) znak "_" (podkre¶lenie) - oznaczaj±cy opcjonalne wyst±pienie spacji
+d) znak "+" (plus) - oznaczaj±cy wyst±pienie co najmniej jednej spacji
+e) znak "`" (odwrotny apostrof) - oznaczaj±cy opcjonalne wyst±pienie apostrofu
+f) znak "~" (tylda) - oznaczaj±cy opcjonalne wyst±pienie my¶lnika i/lub spacji
+g) ci±g liter w nawiasach kwadratowych - oznaczaj±cy dopasowanie do dowolnej
+   litery z ci±gu
+   
+   Przyk³ad: ren[eé] pasuje do "rene" i "rené"
+   
+h) ci±g mo¿liwo¶ci zawarty w nawiasach okr±g³ych oddzielony znakiem "|",
+   oznaczaj±cy dopasowanie do najd³u¿szej pasuj±cej mo¿liwo¶ci.
+   
+   Przyk³ad: john(a|owi|) pasuje do "johna", "johnowi" i "john"
+
+i) "*" (gwiazdka) - oznaczaj±cy dopasowanie do reszty liter a¿ do koñca wyrazu.
+   Nie nale¿y stosowaæ w s³owniku g³ównym.
+   
+Wzorzec musi rozpoczynaæ siê liter± lub cyfr±. Po znaku "*" nie mo¿e wyst±piæ
+litera. Koñcz±cym znakiem nie mo¿e byæ "_" ani "+".
+
+FLAGI
+
+Aktualnie rozpoznawane s± nastêpuj±ce flagi:
+
+<cyfra> - ustalenie akcentu na n-tej sylabie od koñca
++<cyfra> - ustalenie akcentu pomocniczego na n-tej sylabie od pocz±tku
+S - wyraz jest skrótowcem i ma byæ przeliterowany
+u - wyraz nie jest akcentowany
+v - wyraz jest czasownikiem
+o - wyraz jest czasownikiem posi³kowym (nieakcentowanym)
+
+We flagach mo¿na podaæ co najwy¿ej jedn± literê!
+
+Przyk³ady:
+
+// S³owo "DNA" bêdzie odczytane jako "de~'en~!a", ale "Dna" nie
+DNA $S
+
+// "waszyngton" bêdzie akcentowany na trzeciej sylabie od koñca
+waszyngton $3
+
+// s³owo "zno³" bêdzie potraktowane jako czasownik i w po³±czeniu
+// z poprzedzaj±cym "nie" bêdzie wymawiane najo "ni~!e zno³"
+zno³ $v
+
+TEKST WYNIKOWY
+
+Tekst wynikowy jest tekstem, który zast±pi dopasowany wzorzec. Mo¿e
+zawieraæ znaki akceptowane przez nastêpn± fazê, czyli:
+
+ma³e litery jêzyka polskiego oraz spacje
+znak '@' oznaczaj±cy "schwa" (przydatny w translacji anglojêzycznych
+	s³ów, np: merp@l, bit@ls)
+znak %, oznaczaj±cy wynik koresponduj±cego we wzorcu dopasowania
+	do mo¿liwo¶ci w nawiasach lub gwiazdki. Je¶li po znaku % nast±pi
+	cyfra, brany bêdzie pod uwagê n-ty wynik.
+
+Tekst mo¿e zawieraæ równie¿ sekwencje steruj±ce wymow±:
+
+~! - oznaczaj±cy akcent g³ówny na nastêpnej samog³osce
+~, - oznaczaj±cy akcent pomocniczy na nastêpnej samog³osce
+~' - oznaczaj±cy zmianê wymowy g³oski (dawniej separator)
+~+ - oznaczaj±cy przed³u¿enie poprzedzaj±cej samog³oski
+
+Przyk³ady:
+
+s~'ingapur (brak zmiêkczenia 's')
+w~!aszyngton (akcent na podanej sylabie)
+
+Ka¿dy wyraz tekstu mo¿e byæ poprzedzony informacjami o wymowie zawartymi
+w nawiasach klamrowych oraz informacjami o akcentowaniu, zawartymi
+w nawiasach kwadratowych. Z informacji o wymowie powinno siê stosowaæ
+wy³±cznie "{v}" oznaczaj±ce czasownik, chocia¿ stosowanie nawet tego
+nie jest zalecane. Z informacji o akcentowaniu powinno siê stosowaæ
+wy³±cznie:
+
+<cyfra> oraz +cyfra> (znaczenie jak we flagach)
+"n" oznaczaj±cy wyraz nieakcentowany.
+
+Przyk³ad:
+
+po+raz [n]poraz
+
+Plik pl_udict.dat mo¿e stanowiæ ¼ród³o przyk³adów.

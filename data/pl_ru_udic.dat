@@ -1,0 +1,21 @@
+// popularne s³ówka
+
+mat'	maæ
+twoju	twaju $1
+jebi	$1
+bolszoj	balszoj $1
+wsiewo³od	$1
+siemion $1
+niko³aj 	$1
+aleksandr	$1
+graz(oj|ach|am|a|ie)	graz% $1
+fiodorowicz $3
+fiodorowicza $3
+fiodorowiczem $3
+fiodorowiczu $3
+sadowoje+kolco sad~!owoje kalc~!o
+Ga³ocz(ka|k±|kê|ce|ki) ga³ocz% $3
+Lenocz(ka|k±|kê|ce|ki) lenocz% $3
+Irocz(ka|k±|kê|ce|ki) irocz% $3
+Griszeñ(ka|k±|kê|ce|ki) griszeñ% $3
+Leonidowicz(|a|em|u) leonidowicz% $3

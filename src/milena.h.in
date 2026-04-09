@@ -1,0 +1,117 @@
+/*
+ * milena.h - Milena TTS system
+ * Copyright (C) Bohdan R. Rau 2008-2023 <ethanak@polip.com>
+ * 
+ * Milena is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * Milena is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with Milena.  If not, write to:
+ * 	The Free Software Foundation, Inc.,
+ * 	51 Franklin Street, Fifth Floor
+ * 	Boston, MA  02110-1301, USA.
+ */
+
+
+#ifndef MILENA_H
+#define MILENA_H 1
+
+#define MILENA_VERSION "{VERSION}"
+#define DATAPATH "{DATAPATH}"
+{MORFOL}
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct milena *milena_Init(
+	char *phonefile,
+	char *dictfile,
+	char *stressfile);
+
+int milena_ReadUserDic(struct milena *cfg,char *fname);
+int milena_ReadUserDicWithFlags(struct milena *cfg,char *fname,int flags);
+int milena_ReadUserDicLineWithFlags(struct milena *cfg,char *line,int flags,
+	char *fname,int lineno);
+int milena_ReadPhraser(struct milena *cfg,char *fname);
+int milena_ReadStressFile(struct milena *cfg,char *fname);
+int milena_ReadIvonaFin(struct milena *cfg,char *fname);
+
+int milena_GetParType(struct milena *cfg,char **str,int spell_empty);
+
+void milena_SetPhraserMode(struct milena *cfg,int mode);
+void milena_SetLangMode(struct milena *cfg,char *lang);
+int milena_DigitsLimit(struct milena *milena,int limit);
+
+typedef void (milena_errfun)(char *,char *,int);
+
+void milena_registerErrFun(struct milena *cfg,milena_errfun *fun);
+
+int milena_GetPhrase(struct milena *cfg,
+	char **str,char *outbuf,int buflen,int *pmode);
+int milena_GetPhraseWithPunct(struct milena *cfg,
+	char **str,char *outbuf,int buflen,int *pmode,int punct,char *some);
+int milena_TranslatePhrase(struct milena* cfg,
+	unsigned char *str,char *outbuf,int buflen,int debug);
+int milena_Prestresser(struct milena *cfg,
+	char *str,char *outbuf,int buflen);
+int milena_Poststresser(char *str,char *outbuf,int buflen);
+
+int milena_ReadVerbs(struct milena *cfg,char *fname);
+
+int milena_ReadKeyChar(struct milena *cfg,char *fname);
+
+int milena_SkipToUnknownWord(struct milena *cfg,char **str);
+char *milena_FilePath(char *name,char *buffer);
+int milena_IsIgnoredWord(struct milena *cfg,char *slowo);
+void milena_Close(struct milena *cfg);
+char *milena_GetVersion(void);
+
+#ifdef MILENA_HAS_MORFOLOGIK
+int milena_SetMorfologik(struct milena *cfg,void *md);
+void *milena_GetMorfologik(char *fname,int shmonly);
+void *milena_StartMorfologik(char *path);
+void milena_DestroyMorfologik(void);
+#endif
+
+int milena_utf2iso(char *src,char *dst,int ignore_oor,int *bad_chars);
+int milena_utf2iso_mp(char *instr,char *outstr,int ignore_oor,int *bad_chars,char **instrpos,int maxpos);
+int milena_alnum(int znak);
+int milena_key(struct milena *cfg,char *key,char *outbuf,int buflen,int *cap);
+int milena_char(struct milena *cfg,char *chr,char *outbuf,int buflen,int *cap);
+int milena_wchar(struct milena *cfg,int chr,char *outbuf,int buflen,int *cap);
+
+int milena_ivonizer(int mode,char *inbuf,char *outbuf,int outlen);
+int milena_ivonizer_n(int mode,char *inbuf,char *outbuf,int outlen,struct milena *cfg);
+int milena_ivonizer_nb(int mode,char *inbuf,char *outbuf,int outlen,struct milena *cfg, int bookmode);
+void milena_ivo2rh(char *buffer);
+int milena_i2uf(char *in, char *out, int outlen);
+
+#ifdef __cplusplus
+}
+#endif
+
+#define MILENA_IVO_HAS_SUBPHR 1
+#define MILENA_IVO_TO_RHV 1
+#define MILENA_UDIC_DICTMODE 1
+#define MILENA_UDIC_IGNORE 2
+#define MILENA_PHR_IGNORE_TILDE 1
+#define MILENA_PHR_IGNORE_INFO 2
+#define MILENA_PHR_IGNORE_ALL 3
+#define MILENA_PARTYPE_EMPTY 0
+#define MILENA_PARTYPE_NORMAL 1
+#define MILENA_PARTYPE_DIALOG 2
+
+#ifndef __WIN32
+extern char const *milena_GetDataPath(void);
+#endif
+
+#endif

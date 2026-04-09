@@ -1,0 +1,19 @@
+Znaczenie flag w pliku pl_dict.dat:
+
+cyfra - akcent na n-tej sylabie od koñca
+v - czasownik
+V - czasownik w trybie rozkazuj±cym
+o - operator (czasownik posi³kowy)
+O - operator nieakcentowany
+s - spójnik
+u - wyraz nieakcentowany
+p - lewa strona w parze dwóch wyrazów, z których akcentowany jest pierwszy
+r - prawa strona w parze dwóch wyrazów, z których akcentowany jest pierwszy
+P - jak p, ale poza kontekstem pary nieakcentowany
+R - jak r, ale poza kontekstem pary nieakcentowany
+N - nigdy nie akcentowany, nawet na koñcu frazy
+G - nie akcentowany przed wyrazem rozpoczynanym wielk± liter±
+h - zaimek "mi","nam" itd.
+w - operator zwi±zany z 'h', do konstrukcji
+	OPERATOR BEZOKOLICZNIK ZAIMEK (np. "powinien mieæ to z g³owy")
+

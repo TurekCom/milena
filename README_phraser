@@ -1,0 +1,197 @@
+FORMAT PLIKU STERUJ¡CEGO FRAZERA
+
+UWAGA! Przed przeczytaniem zapoznaj siê z formatem s³ownika
+u¿ytkownika (README_udict)!
+
+Oprócz t³umaczenia s³ownikowego, frazer zajmuje siê równie¿ t³umaczeniem
+pojedynczych znaków specjalnych oraz interpretacj± liczebników.
+
+Najprostsz± lini± jest tu:
+
+spell <znak> <t³umaczenie>
+
+podaj±c± w jaki sposób nale¿y wymawiaæ dany znak.
+
+Przyk³ad:
+
+spell @ ma³pa
+spell _ podkre¶lenie
+
+Ci±gi znaków mo¿na podawaæ w linii "emot":
+
+emot <ci±g> <t³umaczenie>
+
+Z uwagi na niemo¿liwo¶æ stosowania spacji w <ci±g>, stosuje siê tu
+nastêpuj±c± konwencjê:
+
+Wyj±tkowo ostatnim znakiem t³umaczenia mo¿e byæ "!" lub "?". Oznacza
+to zakoñczenie frazy po dopasowaniu wszystkich kolejnych emoticonów.
+
++ - spacja
+\<znak> - znak
+
+Przyk³ad:
+
+emot :) haha
+emot :-) hahaha
+emot <co+jest?> co jest?
+
+Dodatkow± lini± jest "emotmod" wskazuj±c± modyfikator, z jakim domy¶lnie
+bêd± wymawiane emotikony (domy¶lnie 1).
+
+Nie nale¿y jednak umieszczaæ linii "emot" w g³ównym pliku frazera - w razie
+konieczno¶ci mo¿na podaæ ¶cie¿kê do dodatkowego pliku. Podstawowe emoticony
+za³±czone s± w pliku pl_emots.dat, automatycznie do³±czanym w milena_kadu.
+Dodanie linii "emot" zmienia nieco dzia³anie frazera - ka¿dy ci±g liter
+zawarty miêdzy "<" i ">" bêdzie traktowany jak emoticon!
+
+Linia "word" s³u¿y do wstawienia linii odpowiadaj±cej formatowi udict.
+S³u¿y przede wszystkim do tego, aby nie tworzyæ zbyt wielu plików
+(np. dla milena_kadu wystarcza jeden dodatkowy plik zamiast dwóch). 
+
+Równie proste jest okre¶lanie jednostek przy liczebnikach mianowanych:
+
+unit <jednostka> <tlumaczenia>
+
+gdzie "jednostka" to zapis jednostki, "t³umaczenia" to cztery oddzielone
+znakiem "|" sposoby wymowy, okre¶laj±ce kolejno:
+  jeden		(np. "kilometr")
+  od 2 do 4	(np. "kilometry")
+  powy¿ej 4	(np. "kilometrów")
+  u³amek	(np. "kilometra")
+  
+Przyk³ad:
+
+unit cm centymetr|centymetry|centymetrów|centymetra
+
+ROZPOZNAWANIE I WYMOWA FRAZ Z LICZEBNIKAMI
+
+UWAGA! Wszystkie nazwy s± ci±gami ma³ych liter a-z oraz cyfr.
+
+Do okre¶lania sposobów rozpoznawania i wymowy s³u¿±:
+
+I) linia "recognize" podaj±ca wzorce rozpoznawania
+
+recognize <nazwa> <wzorzec>
+
+Podobnie jak w przypadku s³ownika, wzorce pobierane s± od ostatniego.
+Jednak je¿li nazwê poprzedzi siê znakiem "+", wzorzec zostanie
+wstawiony na koniec listy. Je¶li nazwa bêdzie poprzedzona znakiem "."
+a ostatnim dopasowanym znakiem bêdzie kropka, po której nast±pi ci±g
+spacji i wielka litera, rozpoznawanie zostanie zakoñczone przed kropk±,
+wymuszaj±c koniec zdania.
+
+Wzorzec rozpoznawania mo¿e zawieraæ:
+
+1) ci±g dowolnych znaków z wyj±tkiem spacji, "\" i "{"
+2) znak "\" i nastêpuj±cy po nim dowolny znak. Oznacza to, ¿e wyst±pienie
+   znaku nie jest obowi±zkowe.
+3) format rozpoznawania zawarty w nawiasach klamrowych.
+
+Format rozpoznawania rozpoczyna siê liter± z zakresu a-zA-Z, stanowi±c±
+nazwê zmiennej, nastêpuj±cego po niej dwukropka oraz dopasowania.
+Dopasowanie to:
+
+r - liczba rzymska. Dopasowuje do liczby w zapisie rzymskim z zakresu
+od 1 do 39. Zakres mo¿na ograniczyæ poprzez podanie za liter± "r"
+warto¶ci minimalnej i/lub poprzedzonej znakiem "-" warto¶ci maksymalnej.
+
+Przyk³ad: {a:r1-12}
+
+d - liczba dziesiêtna. Mo¿e byæ poprzedzona cyfr± oznaczaj±c± dopasowanie
+do ci±gu cyfr podanej d³ugo¶ci. Równie¿ jak w przypadku liczby rzymskiej
+zakres mo¿na ograniczyæ.
+
+Przyk³ad: {s:2d0-59}
+
+e<nazwa> - wyra¿enie. Dopasowuje do ci±gu znaków z linii "expr" (patrz ni¿ej).
+Zapamiêtan± warto¶ci± jest dopasowany ci±g znaków. Je¶li istnieje wiêcej
+niz jedna linia "expr" o danej nazwie, dopasowywane bêd± wszystkie zaczynaj±c
+od ostatniej.
+
+c<nazwa> - wybór. Dopasowuje do ci±gu znaków w linii "choice". Zapamiêtane
+s± zarówno warto¶æ okre¶lona w "choice", jak i dopasowany ci±g znaków,
+zast±piony odpowiednim ci±giem z linii "choiceval" je¶li taka istnieje.
+
+Wbudowany wybór "mond" oznacza nazwê miesi±ca w dope³niaczu.
+
+u<jednostka> - jednostka z linii "unit"
+
+II) Linia "expr" podaj±ca dopasowania do ci±gów znaków, które musz± byæ
+    powtórzone przy wymawianiu. Postaæ linii to:
+    
+expr <nazwa> <ci±g>
+
+Ci±g to dowolny ci±g liter, interpretowany podobnie jak w przypadku s³ownika,
+przy czym jedyn± specjaln± konstrukcj± jest lista mo¿liwo¶ci w nawiasach.
+
+Przyk³ad:
+expr wieku (wieku|stulecia)
+
+III) Linia "choice" okre¶laj±ca jedn± z mo¿liwo¶ci. Format linii to:
+
+choice <nazwa> <warto¶æ> <string>
+
+Przyk³ad:
+
+choice dtyg 1 pon
+choice dtyg 1 poniedzia³ek
+choice dtyg 2 wto
+choice dtyg 2 wtorek
+
+IV) Linia "choiceval" okre¶laj±ca wymowê danej mo¿liwo¶ci. Format linii to:
+
+choiceval <nazwa> <warto¶æ> <wymowa>
+
+Przyk³ad:
+
+choiceval dtyg 1 poniedzia³ek
+choiceval dtyg 2 wtorek
+
+V) Linia "sayas" okre¶laj±ca sposób wymowy rozpoznanego ci±gu. Format linii to:
+
+sayas <nazwa> <wymowa>
+
+gdzie "wymowa" mo¿e zawieraæ:
+
+1) litery z wymawialnego zakresu (ma³e litery jêzyka polskiego)
+2) spacje
+3) zawarte w nawiasach klamrowych formaty.
+
+Format rozpoczyna siê od jednoliterowej nazwy zmiennej (odpowiadaj±cej nazwie
+z linii "recognize") oraz opcjonalnie dwukropka i sposobu wymowy. Je¶li
+nie podano sposobu wymowy, warto¶æ zmiennej bêdzie t³umaczona na:
+
+a) w przypadku liczby - liczebnik w formie podstawowej
+b) w przypadku "expr" - dopasowany ci±g.
+c) w przypadku "choice" - warto¶æ z "choiceval" lub dopasowany ci±g.
+d) w przypadku "unit" - odpowiednia forma jednostki.
+
+Sposób wymowy nie dotyczy expr i unit. Podaje on w jakiej formie ma byæ wymówiony
+liczebnik. Istniej± nastêpuj±ce mozliwo¶ci:
+
+dmx - forma podstawowa (np. "dwa")
+
+dfx - forma podstawowa w rodzaju ¿eñskim ("dwie")
+
+df0 - jak dfx, ale dotyczy liczb dwucyfrowych z wymawianym
+	pierwszym zerem ("zero dwie")
+dap - wyliczenie w formie przys³ówkowej ("drugo")
+
+dac - ilo¶æ w formie przys³ówkowej ("dwu")
+
+dmt - nazwa miesi±ca w dope³niaczu ("lutego")
+
+Oraz wyliczenia:
+
+dmm - rodzaj mêski, mianownik ("drugi")
+dfm - rodzaj ¿eñski, mianownik ("druga")
+dnm - rodzaj nijaki, mianownik ("drugie")
+dmc - rodzaj mêski, celownik ("drugiemu")
+dfd - rodzaj ¿eñski, dope³niacz ("drugiej")
+dmd - rodzaj mêski, dope³niacz ("drugiego")
+dfb - rodzaj ¿eñski, biernik ("drug±")
+dmn - rodzaj mêski, narzêdnik ("drugim")
+
+Kompletne przyk³ady w pliku pl_phraser.dat
+

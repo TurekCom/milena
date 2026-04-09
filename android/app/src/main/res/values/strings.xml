@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Milena MBROLA</string>
+    <string name="engine_name">Milena MBROLA</string>
+    <string name="settings_title">Ustawienia Mileny MBROLA</string>
+    <string name="settings_header">Milena MBROLA</string>
+    <string name="settings_subtitle">Polski silnik TTS oparty o Milenę i głos MBROLA pl1.</string>
+    <string name="voice_family_label">Profil głosu</string>
+    <string name="voice_male">Standard</string>
+    <string name="voice_female">Standard</string>
+    <string name="variant_label">Wariant</string>
+    <string name="rate_label">Prędkość</string>
+    <string name="pitch_label">Wysokość</string>
+    <string name="volume_label">Głośność</string>
+    <string name="speak_emoji_label">Czytaj emoji i emotikony</string>
+    <string name="speak_emoji_help">Gdy włączone, silnik zamienia popularne emotikony, emoji i pojedyncze znaki specjalne na polskie nazwy.</string>
+    <string name="emoji_enabled">Czytanie emoji włączone.</string>
+    <string name="emoji_disabled">Czytanie emoji wyłączone.</string>
+    <string name="punctuation_label">Interpunkcja w fokusu domyślnym</string>
+    <string name="punctuation_help">Dotyczy tylko zwykłego poruszania fokusem. Przy nawigacji po znakach pojedyncze znaki są nadal czytane zawsze.</string>
+    <string name="punctuation_all">Wszystkie</string>
+    <string name="punctuation_some">Niektóre</string>
+    <string name="punctuation_most">Większość</string>
+    <string name="punctuation_none">Nic</string>
+    <string name="punctuation_selected">Wybrano poziom interpunkcji: %1$s.</string>
+    <string name="dictionary_label">Słownik wymowy</string>
+    <string name="dictionary_help">Format pliku: słowo=wymowa, po jednej parze w linii. Przykład: facebook=fejsbuk</string>
+    <string name="dictionary_button">Dodaj słownik TXT</string>
+    <string name="dictionary_none">Brak wgranego słownika.</string>
+    <string name="dictionary_loaded">Wgrany słownik: %1$s</string>
+    <string name="dictionary_error">Nie udało się wczytać słownika.</string>
+    <string name="runtime_label">Runtime</string>
+    <string name="runtime_preparing">Przygotowuję runtime Mileny i MBROLA.</string>
+    <string name="runtime_ready">Runtime gotowy dla ABI: %1$s.</string>
+    <string name="runtime_error">Nie udało się przygotować runtime Mileny.</string>
+    <string name="sample_text">Cześć 😊. Tu Milena MBROLA na Androidzie.</string>
+    <string name="percent_value">%1$d%%</string>
+    <string name="preview_label">Test odsłuchu</string>
+    <string name="preview_hint">Wpisz tekst do sprawdzenia syntezy</string>
+    <string name="preview_button">Odtwórz test</string>
+    <string name="preview_stop_button">Zatrzymaj</string>
+    <string name="preview_ready">Silnik testowy gotowy.</string>
+    <string name="preview_error">Nie udało się uruchomić testowego TTS.</string>
+    <string name="preview_empty">Pole testowe jest puste.</string>
+    <string name="preview_started">Uruchomiono odsłuch testowy.</string>
+</resources>

@@ -1,0 +1,11 @@
+#!/bin/bash
+dirs="/usr/local/etc/speech-dispatcher/modules /etc/speech-dispatcher/modules"
+for d in $dirs; do
+	if [ -d $d ] ; then
+		echo $d
+		exit 0
+	fi
+done
+echo "none"
+
+		

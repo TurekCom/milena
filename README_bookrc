@@ -1,0 +1,64 @@
+UWAGA! Od wersji 0.2.80 skrypty nie tworz± ju¿ same pliku konfiguracji
+~/.milena_bookrc - zamiast tego domy¶lna konfiguracja czytana jest
+z /etc/milena/milena.conf. Dodatkowo domy¶lnym po³o¿eniem pliku
+konfiguracji jest od tej chwili ~/.local/share/milena.conf.
+
+
+
+Ustawienia w pliku milena.conf:
+
+
+# ¶cie¿ki do plików
+
+mbrola=/¶cie¿ka/do/programu/mbrola
+voice=/¶cie¿ka/do/pliku/pl1
+lame=/¶cie¿ka/do/pliku/lame
+
+# tempo i pitch bêd± przekazane do Mbroli
+
+tempo=0.8
+pitch=0.9
+
+#tempo_sub okre¶la tempo dla milena_subplayer.
+#w przypadku braku zostanie u¿yty tempo
+
+tempo_sub=0.8
+
+# bitrate okre¶la poziom kompresji plików mp3.
+# sugerowane warto¶ci to 40 dla stereo i 32 dla mono
+
+bitrate=40
+
+# soxeffect okre¶la efekty soxa odpowiednio dla milena_say i milena_book
+
+soxeffect_say="efekt"
+soxeffect_book="efekt"
+
+# tryb ksi±¿ki mono lub stereo. Stereo ma zastosowanie wy³±cznie wtedy,
+# gdy u¿yto stereofonizacji w efekcie soxa (np. reverb)
+
+book_mode=stereo
+
+
+# zakomentuj/odkomentuj tê liniê je¶li zamiast g³osu w pliku
+# mp3 bêd± wy³±cznie szumy
+
+lame_noswap=yes
+
+# je¶li u¿ywamy w³asnych niestandardowych ustawieñ modu³u mbroli
+# (pauzy itp.), mo¿emy podaæ plik w tej linii.
+
+mbrola_conf=/¶cie¿ka/do/dodatkowego/pliku/mbrola.dat
+
+# je¶li u¿ywamy innej kompresji ni¿ 2 w milena_nokia, mo¿na j± ustawic
+# w tej linii
+
+awblevel=2
+
+# sterowanie u¿yciem danych Morfologika
+# dopuszczalne parametry:
+# never - nie u¿ywaj morfologika
+# always - zawsze u¿ywaj morfologika SHM
+# server - zawsze u¿ywaj morfologika SHM, uruchom serwer je¶li nie istnieje
+
+morfologik=never

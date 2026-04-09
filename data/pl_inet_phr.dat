@@ -1,0 +1,9 @@
+//korekta b³êdu Onet.pl w tytu³ach wiadomo¶ci
+
+recognize .dmyr -{d:d1-31}-{m:r1-12}-{y:d}
+
+//chromevox i jego format daty
+
+recognize @$cvoxdate {H:2d0-23} {M:2d0-59} {S:2d0-59}, {d:d1-31}.{m:d1-12}.{y:d}
+sayas cvoxdate godzina {H:dfm} {M:df0} i {S:dfx} {S:usek} {d:dmd} {m:dmt} {y:dmx} 
+

@@ -1,0 +1,27 @@
+#!/bin/bash
+dirs="/usr/share/mbrola \
+/usr/share/festival \
+/usr/local/share/mbrola \
+/usr/local/share/festival \
+$HOME"
+
+voice="none"
+if [ -f ./found_voice ] ; then
+	. ./found_voice
+	if [ "$voice" != "none" ] ; then
+		echo $voice
+		exit 0
+	fi
+fi
+for d in $dirs; do
+	if [ -d $d ] ; then
+		v=`find $d -path "*/pl1" -and -type f`
+		if [ "$v" != "" ] ; then
+			voice=$v
+			break
+		fi
+	fi
+done
+voice=`echo $voice | awk '{print $1}'`
+echo voice=$voice > ./found_voice
+echo $voice

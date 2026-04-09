@@ -1,0 +1,10 @@
+prefix={PREFIX}
+exec_prefix={PREFIX}
+libdir={LIBDIR}
+includedir={PREFIX}/include
+
+Name: milena
+Description: Milena TTS library
+Version: {VERSION}
+Cflags: -I${includedir}
+Libs: -L${libdir} -lmilena -lmilena_mbrola

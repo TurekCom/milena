@@ -1,0 +1,195 @@
+Utils - czyli dodatki do Mileny
+
+I. DYKCJONARZ
+
+Jest to prosty program pozwalaj±cy na stworzenie s³ownika przeznaczonego
+dla pojedynczego tekstu (np. ksi±¿ki) w celu prawid³owej wymowy przez
+Milenê nazw w³asnych. Pobiera wszystkie wyrazy z tekstu i wypisuje te,
+które nie pasuj± do s³ownika Mileny a w ca³ym tek¶cie pisane s± wy³±cznie
+wielk± liter± (oprócz pocz±tku zdania), zawieraj± apostrof lub dowoln±
+literê z zakresu poza polskimi.
+
+Program jest bardzo prowizoryczny, ale do czasu opracowania pe³nego s³ownika
+wymawialnych wyrazów mo¿e byæ przydatny...
+
+II. MILENIZER
+
+Milenizer to konwerter tekstu na format przeznaczony dla Mileny. Tekstem
+wej¶ciowym mo¿e byæ:
+
+1) niesformatowany tekst w dowolnym kodowaniu. Nastêpuje tu wy³±cznie
+   konwersja na ISO-8859-2.
+   
+2) sformatowany tekst w dowolnym kodowaniu. Oprócz konwersji na ISO-8859-2
+   milenizer próbuje po³±czyæ linie w akapity, w miarê mo¿liwo¶ci l±cz±c
+   równie¿ przeniesienia wyrazów. Mo¿liwe jest wymuszone zakoñczenie
+   akapitu pust± lini± lub rozpoznawanie koñca akapitu po d³ugo¶ci linii.
+
+3) tekst w formacie rtf.
+
+Na wyj¶ciu otrzymuje siê tekst w postaci akceptowanej przez Milenê (ka¿dy
+akapit w jednej linii). Mo¿liwy jest równie¿ pó³automatyczny podzia³ tekstu
+na rozdzia³y, z opcjonaln± autonumeracj± rozdzia³ów, uwzglêdnianiem
+tytu³ów rozdzia³ów oraz wyró¿nieniem prologu oraz epilogu lub ostatniego
+rozdzia³u.
+
+Milenizer mo¿e równie¿ s³u¿yæ jako prosty konwerter z RTF na TXT.
+Na wyj¶ciu otrzymuje siê wtedy plik tekstowy w kodowaniu UTF-8.
+
+Sposób u¿ycia:
+	
+	milenizer [opcje] <plik>
+
+Dostêpne opcje:
+
+-- opcje rozformatowania --
+  -u <minlen>
+  -U <minlen>
+     W³±czenie rozformatowania. Je¶li <minlen> wynosi 0, uznaje siê,
+     ¿e akapity s± oddzielone pust± lini±. W przeciwnym przypadku
+     akapitem koñcz±cym jest akapit o d³ugo¶ci nie wiêkszej ni¿ <minlen>.
+     Opcja -U powoduje dodatkowo ignorowanie numeracji stron (tzn. linii
+     zawieraj±cych wy³±cznie cyfry oraz nastepuj±cych po nich pustych)
+  -d
+     nie uznaje linii zaczynaj±cych sie od '-' za dialogi.
+
+-- opcje podzia³u na rozdzia³y --
+
+  -s <sciezka>
+     w³±cza tryb podzia³u na pliki rozdzia³ów. W tym trybie pierwsza linia
+     traktowana jest jako linia tytu³owa i rozpoczyna ka¿dy plik. Je¶li nie
+     podano ¿adnej z opcji -a/-A, pierwsza linia ka¿dego rozdzia³u jest
+     traktowana jako tytu³owa rozdzia³u i oddzielona kropk± od tytu³u
+     ksi±¿ki. Po linii tytu³owej zawsze wystêpuje pusty wiersz. Ka¿dy plik
+     koñczony jest oddzielonym pustym wierszem zdaniem "koniec rozdzia³u"
+     lub (dla ostatniego) "koniec ksi±¿ki". Je¶li podano opcje -p/-P,
+     prolog koñczony jest zdaniem "koniec prologu".
+     Kolejne pliki maj± postaæ <sciezka>_<numer>.txt, gdzie <numer> jest
+     dwu- lub trzycyfrow± liczb± oznaczaj±c± kolejny plik.
+  -S <separator>
+     Podaje znak separuj±cy rozdzia³y (domyslnie '#'). Znak ten powinien byc
+     pierwszym widocznym znakiem linii. Wszelkie bia³e znaki za separatorem
+     s± ignorowane.
+
+-- opcje autonumeracji rozdzia³ow --
+
+  -a
+     w³±cza autonumeracjê rozdzia³ow
+  -A
+     w³±cza autonumeracje, dodatkowo pierwsza linia rozdzia³u traktowana
+     jest jako tytu³ rozdzia³u.
+  -l
+     wyró¿nia ostatni rozdzia³
+  -p, -P
+     wyró¿nia prolog. Jesli podano -P pierwsza linia traktowana jest jako
+     tytu³ prologu.
+  -e, -E
+     wyró¿nia epilog. Jesli podano -E pierwsza linia traktowana jest jako
+     tytu³ epilogu.
+  Opcje -p/-P i -e/-E dzia³aj± niezale¿nie od tego czy podano -a czy -A.
+  Wyst±pienie którejkolwiek z opcji -p/-P/-e/-E/-l bez opcji -a/-A jest
+  nielegalne. Wszystkie opcje autonumeracji s± ignorowane, je¶li nie podano
+  opcji -s.
+
+-- opcje konwersji --
+
+  -c <kodowanie>
+     podaje kodowanie pliku wej¶ciowego. Je¶li nie podano tej opcji,
+     program próbuje wydedukowac kodowanie na podstawie zawarto¶ci pliku.
+     Je¶li program skompilowano z bibliotek± enca, bêdzie ona u¿yta do
+     okre¶lenia kodowania. W przeciwnym przypadku dopuszczalne s± tylko
+     trzy wej¶ciowe kodowania (UTF-8, ISO-8859-2, CP_1250).
+  -r
+     powoduje ¿e program dokona wy³±cznie konwersji z formatu RTF na tekst
+     w kodowaniu UTF-8 (przydatne przy rêcznej obróbce plikow). Podanie
+     tej opcji spowoduje, ze wszystkie opcje oprocz -o, -i oraz -f bêd±
+     ignorowane.
+  -i
+     powoduje, ¿e przy konwersji z UTF-8 znaki spoza dopuszczalnego zakresu
+     bêd± ignorowane. Nie dotyczy to znaków o kodach wy¿szych ni¿ \uFFFF.
+  -I
+     powoduje, ¿e przy konwersji z UTF-8 znaki spoza dopuszczalnego zakresu
+     bêd± wypisywane jako szesnastkowe encje zgodne z HTML. Opcja przeznaczona
+     przede wszystkim do przygotowania tekstu do dalszej obróbki.
+
+-- pozosta³e opcje --
+
+  -h
+     wypisuje tre¶æ pomocy
+  -o <nazwa_pliku>
+     program zapisze wynik konwersji do podanego pliku (domy¶lnie program
+     wypisuje wynik na standardowe wyj¶cie).
+  -f <tryb>
+     okre¶la tryb traktowania przypisów (footnotes) przy konwersji plikow
+     w formacie RTF. Dopuszczalne s± nastêpujace tryby:
+   d - ignorowanie przypisow (domy¶lnie);
+   n - przypisy w postaci czytelnej na ekranie. Ka¿dy przypis w tre¶ci
+       oznaczany jest [n] (gdzie <n> to numer przypisu). Po akapicie
+       wypisywana jest linia "---", a po niej wszystkie przypisy wystepuj±ce
+       w akapicie.
+   e - jak wy¿ej, ale wszystkie przypisy s± grupowane i wypisane na koñcu.
+   a - podobnie jak 'n', lecz przypisy wypisane s± w formie czytelnej dla
+       syntezatora mowy.
+   i - przypisy w postaci czytelnej dla syntezatora mowy bêd± wypisane
+       bezpo¶rednio w miejscu wyst±pienia przypisu w tre¶ci.
+
+Uwagi co do konwersji na ISO-2.
+
+Milenizer rozpoznaje litery do kodu \u017f oraz "s" i "t" z przecinkiem.
+W przypadku napotkania znaku literowego niewystêpuj±cego w ISO-2:
+
+1) Litery "s" i "t" z przecinkiem zamienione zostaj± odpowiednio
+   na "º" i "þ";
+
+2) Litery "a","e","i","u" z akcentem gravis zostaj± zamienione
+   na odpowiednie litery z akutem (pozwala to na rozró¿nienie
+   np. angielskich i francuskich s³ów o podobnej pisowni);
+
+3) Litery thorn i eth zostaj± zamienione odpowiednio na "t" i "d";
+
+4) Litera n+tylda wystêpuj±ca przed samog³osk± zostaje zamieniona na "ñj",
+   w pozosta³ych przypadkach na "ñ";
+
+5) Litery "a+ring", "ae", "o+stroke", "oe" "ij" i "eng" zamienione zostaj±
+   odpowiednio na "o", "ä", "ö", "ö", "ij", "ng";
+
+6) Pozosta³e litery zostaja zamienione na ich odpowiedniki bez akcentu.
+
+Taki sposób konwersji w wielu przypadkach pozwala na prawid³ow± (lub
+przynajmniej nie ra¿±co b³êdn±) wymowê obcojêzycznych wyrazów bez
+konieczno¶ci wprowadzania ich do s³ownika.
+
+Pe³na tablica konwersji - patrz plik utils/readfile.c
+
+Dodatkowo czê¶ciowo rozpoznawana jest cyrylica i przek³adana fonetycznie
+wed³ug uproszczonych zasad odpowiadaj±cych jêzykowi rosyjskiemu. Oprócz
+liter z alfabetu rosyjskiego rozpoznawane s± równie¿ litery charakterystyczne
+dla alfabetów ukraiñskiego i bia³oruskiego. Translacja jest w fazie
+eksperymentalnej, nie nale¿y siê wiêc spodziewaæ dobrych rezultatów,
+ale czytany tekst powinien byæ zrozumia³y. 
+
+III) MILENA_BOOK
+
+Jest to bardzo prosty skrypt w bashu s³u¿±cy do szybkiej konwersji ksi±¿ki
+bêd±cej wynikiem dzia³ania milenizera (czyli kompletu plików txt) na 
+komplet plików mp3.
+
+Sposób u¿ycia:
+
+milena_book [opcje] <katalog>
+
+Przy pierwszym uruchomieniu skrypt tworzy plik ~/.milena_bookrc, w którym
+nale¿y ustawiæ wszystkie parametry, w szczególno¶ci parametr "voice"
+wskazuj±cy ¶cie¿kê do pliku jêzykowego Mbroli.
+
+Opcje:
+
+	-H - odczyt godzin w formacie HH:MM:SS i HH:MM
+	-u plik - dodatkowy s³ownik uzytkownika
+	-f plik - dodatkowy plik frazera
+	-m plik - dodatkowy plik mbroli
+	-L lang - plik jêzyka
+
+Skrypt znajduje wszystkie pliki z rozszerzeniem .txt w podanym katalogu
+i tworzy z nich pliki mp3, zamieniaj±c w nazwie rozszerzenie .txt na .mp3.
+Do pracy wymagany jest lame.

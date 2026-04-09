@@ -1,0 +1,96 @@
+#!/bin/bash
+
+tempo=0.85
+pitch=0.9
+delay=0
+pl1=/usr/share/mbrola/pl1/pl1
+
+infile=""
+outfile=""
+
+function helpme()
+{
+echo "Sposób użycia: $0 [opcje] [-F plik | tekst]"
+echo
+echo "Opcje"
+echo "-O plik.wav - plik wynikowy"
+echo "-u plik.dic - plik słownika"
+echo "-t temat    - oznaczenie tematu"
+echo "-L język    - język wyrazów obcych"
+echo "-D nazwa    - nazwa karty dźwiękowej"
+echo "-l          - włączenie trybu lektor"
+echo "-f float    - mnożnik częstotliwości (normalnie 0.9)"
+echo "-s float    - mnożnik tempa (normalnie 0.85)"
+echo "-d msec     - opóźnienie startu (normalnie 0)"
+echo "-C          - klient/serwer"
+echo "-T sec      - timeout dla klient/serwer (normalnie 6)"
+echo "-h          - wyświetl pomoc"
+
+exit 1
+}
+
+vline=""
+lektor=""
+card=""
+dic=""
+cs=""
+while getopts "O:F:hlL:t:u:D:f:s:d:CT:" opt; do
+	if [ "${opt}" == "F" ] ; then
+		infile="${OPTARG}"
+		continue
+	elif [ "${opt}" == "O" ] ; then
+		outfile="${OPTARG}"
+		continue
+	elif [ "${opt}" == "L" ] || \
+		[ "${opt}" == 't' ] || \
+		[ "${opt}" == 'T' ]; then
+		vline=${vline}" -${opt} ${OPTARG}"
+	elif [ "${opt}" == 'u' ] ; then
+		dic="${OPTARG}"
+	elif [ "${opt}" == "l" ] ; then
+		lektor="-l"
+	elif [ "${opt}" == "C" ] ; then
+		cs="-C"
+	elif [ "${opt}" == "f" ] ; then
+		pitch="${OPTARG}"
+	elif [ "${opt}" == "s" ] ; then
+		tempo="${OPTARG}"
+	elif [ "${opt}" == "d" ] ; then
+		delay="${OPTARG}"
+	elif [ "${opt}" == "D" ] ; then
+		card="-D ${OPTARG}"
+		continue
+	elif [ "${opt}" == "S" ] || [ "${opt}" == "X" ] ; then
+		vline=${vline}" -${opt}"
+	else
+		helpme
+	fi
+done
+shift $((OPTIND-1))
+
+dly=`echo $delay $tempo | awk '{a=int($1/$2);if (a<50) a=50;print a;}'`
+
+instr="$@"
+(
+if [ -n "${instr}" ] ; then
+	echo ${instr}
+elif [ -n "${infile}" ] ; then
+	cat "${infile}"
+else
+	cat
+fi
+) | (
+	if [ -n "${dic}" ] ; then
+		milena ${cs} -H -M -U ${vline} ${lektor} -u "${dic}"
+	else
+		milena ${cs} -H -M -U ${vline} ${lektor}
+	fi
+) | sed "1s/^/_ $dly\n/" | (
+
+if [ -n "${outfile}" ] ; then
+	mbrola -e -f ${pitch} -t ${tempo} -v 1 $pl1 - "${outfile}"
+else
+	mbrola -e -f ${pitch} -t ${tempo} -v 1 $pl1 - - | \
+	aplay -q -f s16_le -c 1 -r 16000 -t raw ${card} -
+fi
+)

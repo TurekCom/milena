@@ -1,0 +1,59 @@
+frest xpowiat:_*(ski|cki)
+frest xwodztwie:_*ym
+
+recognize pudztwo pow\.{:xpowiat}
+sayas pudztwo powiat
+
+recognize pudztwa pow\.{:xwodztwa}
+sayas pudztwa powiatu
+
+recognize pudztwu pow\.{:xwodztwu}
+sayas pudztwu powiatowi
+
+recognize pudztwie pow.{:xwodztwie}
+sayas pudztwie powiecie
+
+word dz.+u. dziennik ustaw
+word w_dz.+u. w dzienniku ustaw
+word z_dz.+u. z dziennika ustaw
+
+choice ustpar 1 ust
+choice ustpar 2 par
+choice ustpar 2 §
+choiceval ustpar 1 ustêp
+choiceval ustpar 2 paragraf
+
+
+recognize artykule w art.\ {n:d1-999}
+recognize artykule w art.\ {n:r1-39}
+recognize artykule w art {n:d1-999}
+recognize artykule w art {n:r1-39}
+recognize artykuleu w art.\ {n:d1-999} {e:custpar}\.\ {u:d1-99}
+recognize artykuleu w art.\ {n:r1-39} {e:custpar}\.\ {u:d1-99}
+recognize artykuleu w art {n:d1-999} {e:custpar}\.\ {u:d1-99}
+recognize artykuleu w art {n:r1-39} {e:custpar}\.\ {u:d1-99}
+sayas artykule artykule {n:dmn}
+sayas artykuleu artykule {n:dmn} {e:custpar} {u:dmm}
+
+recognize artykulu z art.\ {n:d1-999}
+recognize artykulu z art.\ {n:r1-39}
+recognize artykulu z art {n:d1-999}
+recognize artykulu z art {n:r1-39}
+recognize artykuluu z art.\ {n:d1-999} {e:custpar}\.\ {u:d1-99} 
+recognize artykuluu z art.\ {n:r1-39} {e:custpar}\.\ {u:d1-99}
+recognize artykuluu z art {n:d1-999} {e:custpar}\.\ {u:d1-99}
+recognize artykuluu z art {n:r1-39} {e:custpar}\.\ {u:d1-99}
+sayas artykulu z artyku³u {n:dmd}
+sayas artykuluu z artyku³u {n:dmd} {e:custpar} {u:dmm}
+
+
+frest fonenum:_\(0#
+frest fonenum:_0#
+frest fonenum:_\+0#
+
+recognize fonik tel\.{:fonenum}
+sayas fonik telefon
+
+recognize fonikx tel\.\ /\ fax{:fonenum}
+sayas fonikx telefon i faks
+

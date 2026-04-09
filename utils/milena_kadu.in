@@ -1,0 +1,37 @@
+#!/bin/bash
+
+voice=%VOICE%
+bindir=%PREFIX%/bin
+pitch=250
+tempo=5
+
+while getopts "MAnka:r:t:f:" opt; do
+	case "$opt" in
+	
+	f) pitch=$OPTARG
+	;;
+	
+	t) tempo=$OPTARG
+	;;
+	
+	*)
+	;;
+	esac
+done
+
+tempo=`echo $tempo | awk '{
+	t=$1;
+	if (t<5) t=0.8-(t-5)*0.24;
+	else t=0.8-(t-5)*0.08;
+	print t;}'`
+
+pitch=`echo $pitch | awk '{
+	t=$1-60;
+	if (t<190) t=0.8-(190-t)/(2.5*190);
+	else t=0.8-1.2*(190-t)/190.0;
+	print t;}'`
+
+
+$bindir/milena_convert -H | $bindir/milena -i -I -f %DATADIR%/pl_emots.dat | \
+%MBROLA% -e -f $pitch -t $tempo $voice - - | \
+play -e signed-integer -c 1 -r 16000 -t raw -b 16 - -q
