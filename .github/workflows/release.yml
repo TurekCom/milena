@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Git tag to publish, for example v1.0.0
+        required: true
+        type: string
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Cache Android NDK and standalone toolchains
+        uses: actions/cache@v4
+        with:
+          path: |
+            tools/android-ndk-r17c
+            tools/android-ndk-r17c-windows-x86_64.zip
+            tools/android-toolchain-arm64
+            tools/android-toolchain-x86_64
+          key: ${{ runner.os }}-milena-ndk-r17c-v1
+
+      - name: Install Inno Setup
+        run: |
+          if (-not (Get-Command ISCC.exe -ErrorAction SilentlyContinue)) {
+            choco install innosetup --no-progress -y
+          }
+
+      - name: Prepare Android signing
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_ALIAS != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          [IO.File]::WriteAllBytes((Join-Path $PWD 'android\release-keystore.jks'), [Convert]::FromBase64String($env:ANDROID_KEYSTORE_BASE64))
+          @"
+storeFile=release-keystore.jks
+storePassword=$env:ANDROID_KEYSTORE_PASSWORD
+keyAlias=$env:ANDROID_KEY_ALIAS
+keyPassword=$env:ANDROID_KEY_PASSWORD
+"@ | Set-Content -Path (Join-Path $PWD 'android\release-signing.properties') -Encoding ASCII
+
+      - name: Note Android signing fallback
+        if: ${{ !(secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEY_ALIAS != '' && secrets.ANDROID_KEY_PASSWORD != '') }}
+        run: Write-Host 'Android signing secrets are not configured. Release APK/AAB will fall back to the debug signing config.'
+
+      - name: Run NVDA driver tests
+        run: python -m unittest tests/test_milena_nvda_driver.py
+
+      - name: Build Windows installer
+        run: .\build_milena_installer.ps1
+
+      - name: Build NVDA add-on
+        run: python .\build_milena_nvda_addon.py
+
+      - name: Build Android packages
+        run: .\build_milena_android.ps1
+
+      - name: Build release checksums
+        run: .\build_release_checksums.ps1
+
+      - name: Publish or update GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISPATCH_TAG: ${{ inputs.tag }}
+        run: |
+          $tag = if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { $env:DISPATCH_TAG }
+          if (-not $tag) {
+            throw 'Release tag is missing.'
+          }
+
+          $notesFile = Join-Path $PWD ("RELEASE_NOTES_{0}.md" -f $tag)
+          if (-not (Test-Path $notesFile)) {
+            throw "Missing release notes file: $notesFile"
+          }
+
+          $assets = @(
+            '.\dist\installer\MilenaMBROLA-SAPI5-1.0.0-x64.exe'
+            '.\dist\nvda\Milena_MBROLA-1.0.0.nvda-addon'
+            '.\dist\android\MilenaAndroid-1.0.0-release.apk'
+            '.\dist\android\MilenaAndroid-1.0.0-release.aab'
+            '.\dist\release\Milena-1.0.0-SHA256SUMS.txt'
+          )
+
+          gh release view $tag --repo $env:GITHUB_REPOSITORY 1>$null 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $assets --repo $env:GITHUB_REPOSITORY --clobber
+            gh release edit $tag --repo $env:GITHUB_REPOSITORY --title ("Milena {0}" -f $tag) --notes-file $notesFile
+          } else {
+            gh release create $tag $assets --repo $env:GITHUB_REPOSITORY --title ("Milena {0}" -f $tag) --notes-file $notesFile
+          }

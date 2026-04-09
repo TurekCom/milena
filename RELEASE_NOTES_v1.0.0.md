@@ -14,6 +14,18 @@ First packaged public release of the Milena ports and integrations prepared in t
 - `Milena_MBROLA-1.0.0.nvda-addon`
 - `MilenaAndroid-1.0.0-release.apk`
 - `MilenaAndroid-1.0.0-release.aab`
+- `Milena-1.0.0-SHA256SUMS.txt`
+
+## Installation
+
+- Windows SAPI5: run `MilenaMBROLA-SAPI5-1.0.0-x64.exe`
+- NVDA: open `Milena_MBROLA-1.0.0.nvda-addon` and restart NVDA
+- Android: sideload `MilenaAndroid-1.0.0-release.apk`
+- Android AAB: use `MilenaAndroid-1.0.0-release.aab` for store-style distribution rather than direct sideloading
+
+## Integrity
+
+Verify downloads against `Milena-1.0.0-SHA256SUMS.txt`.
 
 ## Verification
 

@@ -13,6 +13,9 @@ Desktop.ini
 /android/build/
 /android/app/build/
 /android/local.properties
+/android/release-signing.properties
+/android/*.jks
+/android/*.keystore
 /sapi5_milena/dist/
 /sapi5_milena/build-x64/
 /sapi5_milena/build-x86/
@@ -54,3 +57,4 @@ __pycache__/
 /android/app/src/main/assets/runtime/common/milena_root/data/
 /android/app/src/main/jniLibs/arm64-v8a/libmilena_exec.so
 /android/app/src/main/jniLibs/x86_64/libmilena_exec.so
+/dist/release/

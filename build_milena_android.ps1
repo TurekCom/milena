@@ -6,8 +6,18 @@ $data = Join-Path $root "data"
 $tools = Join-Path $root "tools"
 $androidDir = Join-Path $root "android"
 $appDir = Join-Path $androidDir "app"
-$sdkDir = Join-Path $env:LOCALAPPDATA "Android\Sdk"
-$sevenZip = "C:\Program Files\7-Zip\7z.exe"
+$sdkDir = if ($env:ANDROID_SDK_ROOT) {
+    $env:ANDROID_SDK_ROOT
+} elseif ($env:ANDROID_HOME) {
+    $env:ANDROID_HOME
+} else {
+    Join-Path $env:LOCALAPPDATA "Android\Sdk"
+}
+$sevenZip = @(
+    (Get-Command 7z.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue),
+    "C:\Program Files\7-Zip\7z.exe",
+    "C:\Program Files (x86)\7-Zip\7z.exe"
+) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
 $python = (Get-Command python -ErrorAction Stop).Source
 $ndkVersion = "android-ndk-r17c"
 $ndkZip = Join-Path $tools "$ndkVersion-windows-x86_64.zip"
@@ -113,11 +123,14 @@ function Ensure-Ndk() {
         Invoke-WebRequest -Uri $ndkUrl -OutFile $ndkZip
     }
 
-    Ensure-Path $sevenZip "7-Zip"
     Write-Status "Extracting Android NDK r17c"
-    & $sevenZip x -y $ndkZip "-o$ndkExtractRoot" | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to extract Android NDK"
+    if ($sevenZip) {
+        & $sevenZip x -y $ndkZip "-o$ndkExtractRoot" | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to extract Android NDK"
+        }
+    } else {
+        Expand-Archive -Path $ndkZip -DestinationPath $ndkExtractRoot -Force
     }
 }
 

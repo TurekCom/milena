@@ -1,6 +1,6 @@
 param(
-    [string]$MbrolaExeSource = 'C:\Program Files\Festival Polski MBROLA SAPI5\festival\mbrola\mbrola.exe',
-    [string]$MbrolaVoiceSource = 'C:\Program Files\Festival Polski MBROLA SAPI5\festival\mbrola\pl1'
+    [string]$MbrolaExeSource,
+    [string]$MbrolaVoiceSource
 )
 
 $ErrorActionPreference = 'Stop'
@@ -9,6 +9,9 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $distDir = Join-Path $root 'sapi5_milena\dist'
 $buildX64 = Join-Path $root 'sapi5_milena\build-x64'
 $buildX86 = Join-Path $root 'sapi5_milena\build-x86'
+$vendoredMbrolaExe = Join-Path $root 'third_party\mbrola\windows-x64\mbrola.exe'
+$vendoredMbrolaVoice = Join-Path $root 'third_party\mbrola\voices\pl1'
+$androidVendoredVoice = Join-Path $root 'android\app\src\main\assets\runtime\common\milena_root\mbrola\pl1'
 
 function Get-BuiltDllPath {
     param(
@@ -29,20 +32,47 @@ function Get-BuiltDllPath {
     return $found.FullName
 }
 
+function Resolve-FirstExistingPath {
+    param(
+        [string[]]$Candidates,
+        [Parameter(Mandatory = $true)][string]$Label
+    )
+
+    foreach ($candidate in $Candidates) {
+        if ($candidate -and (Test-Path $candidate)) {
+            return $candidate
+        }
+    }
+
+    throw "Nie znaleziono $Label. Sprawdzone ścieżki:`n$($Candidates -join "`n")"
+}
+
 & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'build_windows.ps1')
 
+if (Test-Path (Join-Path $distDir 'data')) {
+    Remove-Item (Join-Path $distDir 'data') -Recurse -Force
+}
+if (Test-Path (Join-Path $distDir 'mbrola')) {
+    Remove-Item (Join-Path $distDir 'mbrola') -Recurse -Force
+}
 New-Item -ItemType Directory -Force -Path (Join-Path $distDir 'x64') | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $distDir 'x86') | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $distDir 'mbrola') | Out-Null
 
+$MbrolaExeSource = Resolve-FirstExistingPath -Label 'źródłowego mbrola.exe' -Candidates @(
+    $MbrolaExeSource,
+    $vendoredMbrolaExe,
+    'C:\Program Files\Festival Polski MBROLA SAPI5\festival\mbrola\mbrola.exe'
+)
+$MbrolaVoiceSource = Resolve-FirstExistingPath -Label 'źródłowego głosu MBROLA' -Candidates @(
+    $MbrolaVoiceSource,
+    $vendoredMbrolaVoice,
+    $androidVendoredVoice,
+    'C:\Program Files\Festival Polski MBROLA SAPI5\festival\mbrola\pl1'
+)
+
 Copy-Item (Join-Path $root 'milena.exe') (Join-Path $distDir 'milena.exe') -Force
 Copy-Item (Join-Path $root 'data') (Join-Path $distDir 'data') -Recurse -Force
-if (!(Test-Path $MbrolaExeSource)) {
-    throw "Nie znaleziono źródłowego mbrola.exe: $MbrolaExeSource"
-}
-if (!(Test-Path $MbrolaVoiceSource)) {
-    throw "Nie znaleziono źródłowego głosu MBROLA: $MbrolaVoiceSource"
-}
 Copy-Item $MbrolaExeSource (Join-Path $distDir 'mbrola\mbrola.exe') -Force
 Copy-Item $MbrolaVoiceSource (Join-Path $distDir 'mbrola\pl1') -Force
 
